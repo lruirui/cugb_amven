@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>待接单</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	<link rel="stylesheet" href="../style/css/common.css" />
+	<link rel="stylesheet" href="../style/css/main.css" />
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+		
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script> 
+	
+	<script src="../js/popmenu.js" ></script>
+	<script src="../js/slide.js" ></script>
+	<script type="text/javascript" src="../js/jquery/jquery-ui.min.js"></script>
+	
+	  
+	<script src="../js/alertPopShow.js" ></script>
+	<script type="text/Javascript" src="https://3gimg.QQ.com/lightmap/components/geolocation/geolocation.min.js"></script><!-- 腾讯获取坐标需要引入的 -->
+    <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+  	<script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+    <script src="../js/giveLngAndLat.js" ></script>   
+
+	<script type="text/javascript">
+	window.onpageshow = function(event){
+		   if (event.persisted) {
+		       window.location.reload();
+		   }
+		};
+	   	var errorMsg = "服务器错误!";
+	   	var param = $.getUrlParam('param');
+	 
+	    //连接
+	    function connect() {
+	    	loadSpin("#wrap"); //转圈
+	    	//ajax请求示例，调用WebRequestController.java
+	    	$.ajax({
+				url :  '../waitingList',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'WaitingList', userId: 'test',param:param},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	initMenuAdmin(jsonObj.adminflag);
+		            	if(jsonObj.type == "WaitingList" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else
+		            	if(jsonObj.type == "WaitingList" && jsonObj.value == "1"){
+		            		showWorkList(jsonObj.content);
+		            	}else if(jsonObj.type == "WaitingList" && jsonObj.value == "0"){
+		            		showNullInfo();
+		            	}
+		            	else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+	    	
+	    }
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }
+	    function showNullInfo(){
+	    	var htmlTmp = "";
+	    /* 	htmlTmp += '<table class="table_data">';
+	    	htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;color:#00BFFF;"><td colspan="3" class="table_head">被指派（未接单）工单</td></tr>';
+	    	htmlTmp += '<tr style="vertical-align:middle;"><td style="color:#FF7F00;vertical-align:middle;" colspan="3" class="table_head">目前暂无被指派（未接单）工单</td></tr>';
+	    	htmlTmp += '</table>'; */
+	    	htmlTmp += '<span class="list_group nodata">被指派（未接单）工单</span>';
+	    	htmlTmp += '<span class="list_group_detail">目前暂无被指派（未接单）工单</span>'; 
+	    	$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	closeSpin();
+	    }
+	    
+	/* 	function showWorkList(content){
+			    	
+			var htmlTmp = "";
+			
+			var htmlTmp3 = "";
+	    	
+    		htmlTmp += '<table class="table_data">';
+    		
+    		htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;"><td colspan="3" class="table_head">被指派（未接单）工单</td></tr>';
+			
+			htmlTmp3 += '<table class="table_data">';
+    		
+    		htmlTmp3 += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;"><td colspan="3" class="table_head">自动派单被指派（未接单）工单</td></tr>'; 
+    		
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			if(content[i].sendWay != 'A'){    				
+    				htmlTmp += '<tr onclick="getWaitingDetail(\'' + content[i].ticketNo + '\');"><td nowrap style="text-align:left;vertical-align:middle;width:14%;padding:5px 10px 5px 10px;"><img src="../style/images/icon_order.png"></td><td><span>' 
+    				+ content[i].building +"&nbsp;&nbsp;" +  content[i].queType + "&nbsp;&nbsp;" + content[i].createDate + "&nbsp;&nbsp;"+"/"+ "&nbsp;&nbsp;"+ content[i].responseTime
+    				+ '</span></td><td nowrap style="text-align:right;vertical-align:right;width:8%;padding:0px 10px 0px 5px;"><img src="../style/images/icon_next.png"></td></tr>';
+    			}else{
+    				htmlTmp3 += '<tr onclick="getWaitingDetail(\'' + content[i].ticketNo + '\');"><td nowrap style="text-align:left;vertical-align:middle;width:14%;padding:5px 10px 5px 10px;"><img src="../style/images/icon_order.png"></td><td><span>' 
+    				+ content[i].building +"&nbsp;&nbsp;" +  content[i].queType + "&nbsp;&nbsp;" + content[i].createDate + "&nbsp;&nbsp;"+"/"+ "&nbsp;&nbsp;"+ content[i].responseTime
+    				+ '</span></td><td nowrap style="text-align:right;vertical-align:right;width:8%;padding:0px 10px 0px 5px;"><img src="../style/images/icon_next.png"></td></tr>';
+    			}
+    		}
+    		
+    		htmlTmp += '</table>';
+    		htmlTmp3 += '</table>';
+    		
+    		$("#contentDiv").get(0).innerHTML = htmlTmp+htmlTmp3;
+	    	
+	    	
+	    	closeSpin();
+		} */
+		
+    function showWorkList(content){
+	    	
+            var htmlTmp = "";
+			var htmlTmp3 = "";
+			
+			htmlTmp += '<span class="list_group" id="appoint_area">被指派（未接单）工单<i class="icon_drop"></i></span>';
+    		htmlTmp += '<span class="content_size" id="appoint_ul">';
+    		htmlTmp += '<ul class="wait_ul">';
+			htmlTmp3 += '<span class="list_group" id="handle_area">自动派单被指派（未接单）工单<i class="icon_drop"></i></span>';
+    		htmlTmp3 += '<span class="content_size" id="handle_ul">';
+    		htmlTmp3 += '<ul class="wait_ul">';
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			if(content[i].sendWay != 'A'){    				
+    				htmlTmp += '<li><a href="#" onclick="getWaitingDetail(\'' + content[i].ticketNo + '\');"><em class="icon_file"></em><span><b>' 
+    				+content[i].building 
+    				+'</b><em>'
+    				+ content[i].queType
+    				+'</em><i>'
+    				+content[i].createDate
+    				+'</i><strong>'
+    				+ content[i].responseTime
+					+'</strong></span></a></li>';
+    			}else{
+    				htmlTmp3 += '<li><a href="#" onclick="getWaitingDetail(\'' + content[i].ticketNo + '\');"><em class="icon_file"></em><span><b>' 
+    				+content[i].building 
+    				+'</b><em>'
+    				+ content[i].queType
+    				+'</em><i>'
+    				+content[i].createDate
+    				+'</i><strong>'
+    				+ content[i].responseTime
+					+'</strong></span></a></li>';
+    			}
+    		}
+    		
+    		htmlTmp += '</ul></span>';
+    		htmlTmp3 += '</ul></span>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp+htmlTmp3;
+	    	
+	    	
+	    	closeSpin();
+	    	pull_down();//下拉收缩工单效果
+		}
+	    
+		function getWaitingDetail(ticketNo){
+			
+			 loadSpin("#wrap"); //转圈
+	    	
+	    	$.ajax({
+				url :  '../waitingList',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'WaitingListDetail', userId: ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){		            	
+		            	if(jsonObj.type == "WaitingListDetail" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else if(jsonObj.type == "WaitingListDetail" && jsonObj.value == "1"){
+		            		showWaitingDetail(eval(jsonObj.resultList),jsonObj.content,eval(jsonObj.list));
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			closeSpin(); 
+			
+		}
+		
+		function showWaitingDetail(resultList,content,list){
+			initMenu();
+			$("#menuDiv").hide();
+			$(".contentDiv").css({"height":"100%"});
+			$("#contentDiv").get(0).innerHTML = "";
+			var htmlTmp = "";
+			htmlTmp +='<span class="ser_code"><i class="icon-paste"></i> 服务单号 <i>'+ content.ticketNo + '</i></span>';
+			htmlTmp += '<span class="content_size">';
+			htmlTmp += '<table class="content_table">';
+   			htmlTmp += '<tr><td>填单人</td><td>'+content.filler+'</td></tr>';
+   			htmlTmp += '<tr><td>学工号</td><td>'+content.stuEmpno+'</td></tr>';
+   			htmlTmp += '<tr><td>联络方式</td><td>'+content.tel+'</td></tr>';
+   			htmlTmp += '<tr><td>微信号</td><td>'+content.webchat+'</td></tr>';
+   			htmlTmp += '<tr><td>服务地点</td><td>'+content.building+content.floor+"楼"+content.room+"号"+'</td></tr>';
+   			htmlTmp += '<tr><td>问题类型</td><td>'+content.queType+'</td></tr>';
+   			htmlTmp += '<tr><td>问题描述</td><td>'+content.queDesc+'</td></tr>';
+   			if(list.length>0){
+   				for(var i=0;i<list.length;i++){
+   					htmlTmp += '<tr><td >附件资料</td><td ><img style="width:100px;height:100px;" src="'+list[i].nfileName+'"/></td></tr>';
+   				}		
+   			}
+   			//htmlTmp += '<tr><td>附件资料</td><td>'+content.fileName+'</td></tr>';
+   			if(resultList.length>0){
+   				htmlTmp += '<tr><td>处理记录</td><td>'+'</td></tr>';
+   				for(var i=0;i<resultList.length;i++){
+   					htmlTmp += '<tr><td>'+'</td><td>'+'<'+eval(i+1)+'>'+'&nbsp;&nbsp;<span>[处理人]</span>'+resultList[i].serviceName+'&nbsp;&nbsp;<span>[状态]</span>'+resultList[i].processStatus+'&nbsp;&nbsp;<span>[说明]</span>'+resultList[i].processDesc+'&nbsp;'+resultList[i].unProcessDesc+'</td></tr>';
+   					htmlTmp += '<tr><td>'+'</td><td>'+ '&nbsp;&nbsp;&nbsp;&nbsp;<small>'+resultList[i].createDate+'</small></td></tr>';
+   				}		
+   			}
+   			htmlTmp += '</table>';
+   			htmlTmp += '</span>';
+			htmlTmp += '<span class="action_btn"><button onclick="showMapBaidu(\''+content.buildingId+'\')" class="width30">刷新地图</button><div class="clearfix"></div></span>';
+			htmlTmp += '<span class="map" id="showMap"></span>';
+			htmlTmp +='<span class="action_btn">';			
+   			htmlTmp += '<button class="width50" onclick="orderTasking(\''+content.ticketNo+'\')">接单 </button>';
+   			/* htmlTmp += '<button class="width30" onclick="unOrderTasking(\''+content.ticketNo+'\')">无法接单</button>'; */
+   			htmlTmp += '<button class="width50" onclick="back()">返回</button>';
+   			htmlTmp +='</span>';
+   			
+   			
+    		
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+    		//htmlTmp拼完之后在调用地图，否则找不到id="showMap"
+    		showMapBaidu(content.buildingId);
+	    	closeSpin();
+		}
+		
+		
+	   
+
+		
+		//接单
+		function orderTasking(ticketNo) {
+		   loadSpin("#wrap"); //转圈
+		   //ajax请求示例，调用WebRequestController.java
+		   $.ajax({
+		   		url :  '../waitingList',  
+			    type : 'POST',  
+			    dataType : 'json', 
+			    data: {id: "1", type: 'Order', userId: ticketNo},
+			    error : function() {
+			    	closeSpin();
+			       // alert(errorMsg);
+			        popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+			    },  
+			    success : function(jsonObj) {  
+			        //alert("Response = " + JSON.stringify(jsonObj));
+			         if(jsonObj != null){
+			        	if(jsonObj.type == "Order" && jsonObj.value == "-1"){
+			            	goLogin();
+			            }else if(jsonObj.type == "Order" && jsonObj.value == "1"){
+			            	//alert(jsonObj.msgType);
+			            	sendMessage(ticketNo,jsonObj.msgType);
+			            	popTipShow.alert('提示 ','接单成功 ', ['知道了'],
+		            				function(e){
+		            				  //callback 处理按钮事件		  
+		            				  var button = $(e.target).attr('class');
+		            				  if(button == 'ok'){
+		            					//按下确定按钮执行的操作
+		            					//todo ....
+		            					this.hide();
+		            				  }	
+		            				  back();
+		            				}
+		            			);
+			            	
+			            	
+			            }else{
+							closeSpin();  //关闭转圈
+						}	
+			         }else{
+			            closeSpin();
+			         }
+			            closeSpin();
+			       }  
+				});
+		    	
+		    }
+			
+		//无法接单
+		function unOrderTasking(ticketNo) {
+			loadSpin("#wrap"); //转圈
+			window.location.href = "waitReverse.html?ticketNo="+ticketNo;
+			closeSpin();
+		}	
+		
+		
+		//发送通知
+		function sendMessage(ticketNo,type){
+			loadSpin("#wrap"); //转圈
+	     	$.ajax({
+				url :  '../SendMessage',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type:type,ticketNo:ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	closeSpin();
+		        }
+		 })
+		}
+			
+		//返回
+		function back(){
+			loadSpin("#wrap"); //转圈
+			$("#menuDiv").show();
+			$(".contentDiv").css({"height":"88%"});
+			window.location.href = "waitingList.html?param=back";
+			htmlTmp = "";
+			closeSpin();
+		}    
+		    
+		window.onload = function (){
+			 
+			connect();  //页面初始化方法
+			
+		};
+		
+		function changeMenuClass(index){
+			
+			
+			
+			var htmlTmp = "";
+			
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "grabTkt.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "waitingList.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "pendingOrder.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=S";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 7){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "admin.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function changeMenuMore(index){
+			if(index == 4){
+				ini_menu();  //调用popmenu.js新写的方法中
+			}
+		}
+		function initMenu(){
+			$("#subMenuDiv_div").hide();
+		}
+		function initMenuAdmin(flag){ 
+			//alert(flag);
+			if(flag == "Y"){
+				$("#admin_div").show();
+			}else{
+				$("#admin_div").hide();
+			}
+		}
+	</script>
+	
+	</head>
+	
+	<body class="sub_bg_grab">
+	    	<div id="contentDiv" class="main_area form-control">
+		    	
+	    	</div>
+	    	
+	    	
+	     <!--底部区域start-->
+		<div id="menuDiv" class="footer_area">
+		    <ul class="footer_ul">
+		      <li><a href="#" onclick="changeMenuClass(1)"><i class="icon_qd"></i><b>抢单</b></a></li>
+              <li class="current"><a href="#" onclick="changeMenuClass(2)"><i class="icon_djd"></i><b>待接单</b></a></li>
+              <li><a href="#" onclick="changeMenuClass(3)"><i class="icon_dcl"></i><b>待处理</b></a></li>
+		      <li id="pop_more"><a href="#" onclick="changeMenuMore(4)"><i class="icon_more"></i><b>更多</b></li>
+		    </ul>	    	
+			<span class="bg_span"></span>
+		</div>
+	<!--底部区域end-->
+		
+	<!--弹出区域start-->
+		<div class="pop_area" id="pop_more_content" style="display:none;">
+	    <ul class="pop_ul">
+	      <li class="solid"><a href="#" onclick="changeMenuClass(5)"><i class="icon_history"></i><b>历史</b></a></li>
+	      <li class="solid"><a href="#" onclick="changeMenuClass(6)"><i class="icon_role"></i><b>切换角色</b></a></li>
+	      <!-- <li id="admin_div" hidden="true"><a href="#" onclick="changeMenuClass(7)"><i class="icon_role"></i><b>切换角色</b></a></li> -->
+	    </ul>
+		</div>
+	<!--弹出区域end-->
+	    
+	</body>
+
+</html>

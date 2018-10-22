@@ -1,0 +1,167 @@
+
+*{ margin: 0; padding: 0;}
+ul,li{ list-style: none}
+/* 自己加的 */
+.subMenuLi {
+	padding-bottom:8px !important;
+	
+}
+.button.blue {
+	
+	border-radius:4px !important;
+	
+} 
+#subMenuDiv_ul {
+	margin-top: -149% !important;
+	
+	
+}
+
+html,body{  
+    margin:0;  
+    padding:0;  
+    width: 100%;  
+    height: 100%; 
+    overflow:hidden; 
+    background:#E3E9EC;
+    text-align:center;
+}  
+
+.contentDiv{  
+    height: 88%;  
+	width:100%;
+	overflow-y:auto;
+	overflow-x:hidden;
+	text-align:center;
+}  
+.menuDiv{    
+    height: 12%; 
+    width:100%; 
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+}  
+
+.subMenuDiv{
+	margin:0;  
+    padding:0;  
+	width:25%;
+	height:100%;
+	display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center; 
+	color:#A1A6B0;
+	font-size:smaller;
+	text-align:center;
+	/* background-image: url('../images/footbar_bg.png');  */
+ 	-moz-background-size:100% 100%; background-size:100% 100%;
+ 	background-color:#132651;
+}
+.menuDiv{    
+    height: 12%; 
+    width:100%; 
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+}  
+
+.subMenuLi{
+	margin:0;  
+    padding:0;  
+	width:100%;
+	hight:100%;
+    align-items: center; 
+	color:#A1A6B0;
+	font-size:smaller;
+	text-align:center;
+	background-image: url('../images/footbar_bg2.png');
+ 	-moz-background-size:100% 100%; background-size:100% 100%;
+}
+.subMenuDiv img{
+	width:30%;
+	height:40%;
+	margin-top:14%;
+}
+.subMenuDiv span{
+	margin-bottom:10%;
+}
+
+
+.subMenuDivOn{
+	margin:0;  
+    padding:0;  
+	width:25%;
+	height:100%;
+	display: -webkit-box;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    -webkit-align-items: center;
+    -ms-flex-align: center;
+    align-items: center; 
+	color:#A1A6B0;
+	font-size:smaller;
+	text-align:center;
+	background-image: url('../images/footbar_bg_on.png');
+ 	-moz-background-size:100% 100%; background-size:100% 100%;
+}
+
+.table_head{text-align:center;}
+
+/*列表内容*/	
+.table_data{width:96%; border-collapse:collapse; margin:10px 2% 0px 2%;}
+.table_data tr{text-align:left; vertical-align:middle; background-image: url('../images/line_2.png'); -moz-background-size:100% 100%; background-size:100% 100%;}
+.table_data tr td{color:#787D7F; height:35px; }
+.table_data tr td span{color:#22C1F1;}
+.table_data img{vertical-align:middle; max-width:100%}
+
+
+/*Form内容*/	
+.table_data_form{width:96%; border-collapse:collapse; margin:10px 2% 0px 2%;}
+.table_data_form tr{text-align:left; vertical-align:middle; background-image: url('../images/line_2.png'); -moz-background-size:100% 100%; background-size:100% 100%;}
+.table_data_form tr td{color:#787D7F;  height:40px; line-height: 40px; white-space:nowrap; padding-left:8px;}
+.table_data_form tr td span{font-size:smaller;}
+.table_data_form tr td input{width:90%; background-color:transparent; border: 0px solid; font-size:smaller;}
+
+/*错误页面*/	
+.errorPage{overflow:hidden; text-align:center;}
+
+.tickno_head{text-align:left; font-size:larger;}
+.tickno_img{vertical-align:middle; max-width:100%; width: 50px; padding-left: 10px;  padding-right: 15px;
+    padding-top: 8px; padding-bottom: 8px;  margin-left: 0px;}
+input[type=text]{border:0;outline:none; background-color:transparent;}
+
+.trackBtn {
+	text-align:right;
+	padding-right:20px !important;
+	padding-top: 10px !important;
+	
+}
+
+

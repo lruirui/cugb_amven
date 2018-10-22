@@ -1,0 +1,10 @@
+@charset "utf-8";
+/* CSS Document */
+label.error {
+	color:#ff0000;
+	display: flex;
+    font-size: 12px;
+}
+label.success{
+	color:#ff0000;
+}

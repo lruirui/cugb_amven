@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>工单跟踪</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	
+	<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" />
+		
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script> 
+	<link rel="stylesheet" href="../style/css/common.css" /> 
+	<script src="../js/alertPopShow.js" ></script>
+	<script type="text/javascript">
+	window.onpageshow = function(event){
+		   if (event.persisted) {
+		       window.location.reload();
+		   }
+		};
+		
+	var url=location.search;
+	var ticketNo = "";
+	if(url.indexOf("?")!=-1){
+		var strs= url.split("?");
+		var sts = strs[1].split("=");
+		ticketNo = sts[1];
+	}
+	//连接
+	function connect() {
+		loadSpin("#wrap"); //转圈
+		//ajax请求示例，调用WebRequestController.java=
+		$.ajax({
+			url :  '../waitingList',  
+	    	type : 'POST',  
+	    	dataType : 'json', 
+	    	data: {id: "1", type: 'UnOrder', userId: "test"},
+	    	error : function() {
+	    		closeSpin();
+	            //alert(errorMsg);
+	            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        				}
+        			);
+	        },  
+	        success : function(jsonObj) {  
+// 	        	alert("Response = " + JSON.stringify(jsonObj));
+	            if(jsonObj != null){
+	            	if(jsonObj.type == "UnOrder" && jsonObj.value == "-1"){
+	            		goLogin();
+	            	}else
+	            	if(jsonObj.type == "UnOrder" && jsonObj.value == "1"){
+	            		unOrder(jsonObj.content);
+// 						alert("success");
+	            	}else{
+						closeSpin();  //关闭转圈
+					}	
+	            }else{
+	            	closeSpin();
+	            }
+	        }  
+		});
+		
+	}
+	function goLogin(){
+	    top.location.href='/cugItsm/html/index.jsp';
+	}
+	window.onload = function (){
+		 
+		connect();  //页面初始化方法
+		
+	};
+
+	function unOrder(content){
+		$("#contentDiv").get(0).innerHTML = "";
+		var htmlTmp = "";
+		htmlTmp += '<table class="selectTab"><tr><td width="30%;"><h4>撤销理由:</h4></td>';
+		htmlTmp += '<td><select class="trackSelect" id="trackSelect">';
+		for(var i=0;i<content.length;i++){
+			htmlTmp += '<option value="'+content[i].dictID+'">'+content[i].dictName+'</option>';
+		}
+		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	
+		closeSpin();
+	}
+	
+	function submitReverse(){
+		var reverseReason = $("#trackSelect").val();
+		loadSpin("#wrap"); //转圈
+		//ajax请求示例，调用WebRequestController.java
+		$.ajax({
+			url :  '../waitingList',  
+	    	type : 'POST',  
+	    	dataType : 'json', 
+	    	data: {id: "1", type: 'UnOrderSub', userId: "test",ticketNo: ticketNo,sysDict: reverseReason},
+	    	error : function() {
+	    		closeSpin();
+	           // alert(errorMsg);
+	            
+	            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        				}
+        			);
+	        },  
+	        success : function(jsonObj) {  
+// 	        	alert("Response = " + JSON.stringify(jsonObj));
+	            if(jsonObj != null){
+	            	if(jsonObj.type == "UnOrderSub" && jsonObj.value == "-1"){
+	            		goLogin();
+	            	}else
+	            	if(jsonObj.type == "UnOrderSub" && jsonObj.value == "1"){
+	            		//alert("撤销成功");
+	            		
+	            		 popTipShow.alert('提示 ','撤销成功', ['知道了'],
+	             				function(e){
+	             				  //callback 处理按钮事件		  
+	             				  var button = $(e.target).attr('class');
+	             				  if(button == 'ok'){
+	             					//按下确定按钮执行的操作
+	             					//todo ....
+	             					this.hide();
+	             				  }	
+	             				 window.location.href="waitingList.html";
+	             				}
+	             			);
+	            		
+	            		
+	            	}else{
+						closeSpin();  //关闭转圈
+					}	
+	            }else{
+	            	closeSpin();
+	            }
+	        }  
+		});
+	}
+	</script>
+</head> 
+<body>
+<div data-role="dialog" id="page1">
+		<div data-role="content" data-theme="c">
+			 <div data-role="content" role="main">
+		      	<div data-role="fieldcontain" id="contentDiv">
+		      		
+		      	</div>
+		        <table style="width: 100%;float: center;height: 60px;">
+		        	<tr>
+		        		<td class="trankTD"><div  class="trankBtn"><a onclick="submitReverse()"><font style="color: #FAFAFA;margin-top: 20px;">确定撤销</font></a></div></td>
+		        		<td class="trankTD"><div class="trankBtn2"><a data-rel="back"><font>关闭</font></a></div></td>
+		        	</tr>
+		        </table>	
+	   	 	</div>
+		</div>
+	</div>
+ 
+</body>
+<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.js"></script>
+    
+    <script src="../js/spin.min.js" ></script>  
+    <script src="../js/mobile.js" ></script>
+    <script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+	<script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+    <script src="../js/giveLngAndLat.js" ></script>   
+    <link rel="stylesheet" href="../style/css/mobile.css" />
+    <link rel="stylesheet" href="../style/css/main.css" />
+<style type="text/css">
+	.trankBtn{
+		margin: 0;
+		padding: 15px 5px 5px 5px;
+		border: 0;
+		float: center;
+		background:  #3CB371;
+		width: 70px;
+		height: 30px;
+		margin-left: 40px;
+	}
+	
+	.trankBtn2{
+		margin: 0;
+		padding: 15px 5px 5px 5px;
+		border: 0;
+		float: center;
+		background:  #8C8C8C;
+		width: 70px;
+		height: 30px;
+	}
+	
+	.trankTD{
+		padding: 5px;
+		
+	}
+	.trackSelect{
+		width: 100%;
+		height: 30px;
+		align:right;
+	}
+	.selectTab{
+		width: 100%;
+	}
+	
+	.trankBtn,.trankBtn2{
+    box-shadow:none;
+    background:rgba(39,54,80,0.8);
+    border-radius:4px;
+    padding:0;
+    line-height: 30px;
+    border:0.1rem solid rgba(255,255,255,0.6);
+    color:#fff !important;
+	}
+	.c-float-popWrap .c-float-modePop{
+		border:0.1rem solid rgba(255,255,255,0.3);
+	}
+	.ui-body-c .ui-link{
+		color:#fff;
+	}
+	.ui-content{
+		padding:0;
+	}
+	
+
+</style>
+</html>

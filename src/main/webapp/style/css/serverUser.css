@@ -1,0 +1,144 @@
+.layout-panel-north {
+	background: #F0F2F5;
+	/* padding: 16px 13px 0px 0; */
+}
+
+.layout-panel-center {
+	/* padding: 16px 13px; */
+	margin-left: 0 !important;
+}
+
+.main-head {
+	border-radius: 4px;
+	height: auto !important;
+}
+
+.title-icon {
+	position: relative;
+	font-family: PingFangSC-Regular;
+	font-size: 18px;
+	color: #679AFA;
+	letter-spacing: 0;
+	padding: 16px 31px;
+}
+
+.title-icon i {
+	display: inline-block;
+	width: 3px;
+	height: 14px;
+	background-color: #679AFA;
+}
+
+.search-group {
+	padding: 0px 0px 20px 31px;
+}
+
+.search-group p {
+	text-align: left;
+}
+
+.search-group input {
+	/* border: 1px solid #DADADA !important;
+	border-radius: 4px !important;
+	height: 40px !important;
+	outline: none; */
+}
+
+.search-group p span.textbox {
+	border: 1px solid #DADADA !important;
+	border-radius: 4px !important;
+	height: 40px ;
+}
+
+.search-group input.textbox-text {
+	width: 140px;
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #5A5E66;
+	letter-spacing: 0;
+	line-height: 14px;
+}
+
+.search-group .input-text {
+	width: 240px;
+}
+
+.search-group button {
+	background: #1890FF;
+	border-radius: 4px;
+	width: 72px;
+	height: 40px;
+	font-family: PingFangSC-Medium;
+	font-size: 14px;
+	color: #FFFFFF;
+	letter-spacing: 0;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	margin-left: 16px;
+}
+
+::-webkit-input-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+:-moz-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+::-moz-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+:-ms-input-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+.combo-panel {
+	height: auto !important;
+}
+
+.combobox-item {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #5A5E66;
+	letter-spacing: 0;
+	line-height: 24px;
+	cursor: pointer;
+}
+
+.main-center {
+	border: none;
+	padding: 10px 0px 8px 15px;
+}
+
+.main-center .icon {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	background: #1890FF;
+	color: #FFF;
+	border-radius: 50%;
+	vertical-align: middle;
+	margin-right: 3px;
+}
+
+.main-center span {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #1890FF;
+	letter-spacing: 0;
+	margin-left:5px;
+}
+.main-foot{
+	/* padding:22px 18px; */
+	box-sizing:border-box;
+}

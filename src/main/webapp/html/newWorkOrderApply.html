@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ITSM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Expires" content="0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Cache-control" content="no-cache">
+<meta http-equiv="Cache" content="no-cache">
+
+<!-- <link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+<link rel="stylesheet" href="../style/css/mobile.css" /> -->
+	<link rel="stylesheet" href="../style/css/main.css" />
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+
+<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+<script src="../js/spin.min.js" ></script>  
+<script src="../js/mobile.js" ></script>
+
+<script src="../js/popmenu.js" ></script>
+<script src="../js/jquery.cookie.js"></script>	
+<script type="text/javascript" src="../js/jquery/jquery-ui.min.js"></script>
+
+<script type="text/javascript" src="../js/scrollQ.js"></script> 
+
+<!-- <script src="../js/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+
+
+<link rel="stylesheet" href="../style/css/common.css" /> 
+ <link href="../js/bootstrap-3.3.7/css/bootstrap.css" rel="stylesheet">
+<link href="../js/bootstrap-3.3.7/css/bootstrap-theme.css" rel="stylesheet">  -->
+
+
+<script src="../js/alertPopShow.js" ></script> 
+
+
+
+<!-- <script type="text/javascript">
+//按关键字搜索,用irame的方式，页面还是在本页，不会跳转。
+function searchByWord(){
+	loadSpin("#wrap"); //转圈
+	var word = $("#word").val();
+	if(word.replace(/(^s*)|(s*$)/g, "").length ==0){
+		  webToast("请输入关键字再查询！",1000);
+	}else{
+	var path = 'http://127.0.0.1:8080/wcp/websearch/PubDoWechat2.do?word='+word;
+	var iframe = '<iframe src="' + path + '" frameborder="0" style="border:0;width:100%;height:99.5%;"></iframe>';
+	$('#content').get(0).innerHTML = iframe;
+	// $("#word").val("");
+	//window.open(path,'_self'); 
+	}
+	
+	closeSpin();
+}
+
+	
+
+</script> -->
+
+
+<script type="text/javascript">
+window.onpageshow = function(event){
+	   if (event.persisted) {
+	       window.location.reload();
+	   }
+	};
+	
+var wcpUrl = null;//定义全局变量用于存储wcpUrl
+var allflag = null; //判断管理员角色的全局变量
+//按关键字搜索
+function searchByWord(){
+	loadSpin("#wrap"); //转圈
+	$('#content').empty();
+	var word = $("#word").val();
+	if(word.replace(/(^s*)|(s*$)/g, "").length ==0){
+		 // webToast("请输入关键字再查询！",1000);
+		 alert("请输入关键字再查询！");
+	 }else{
+	 	  $.ajax({ 
+		        type:'get',
+		        async: false,
+		        url:wcpUrl+"/websearch/PubDoWechat.do", 
+		        dataType:'jsonp',  // 处理Ajax跨域问题
+		        jsonp:'callbackparam',  
+		         data:{'word':encodeURI(word)},
+		         jsonpCallback:"success_jsonpCallback",  
+		         success: function(data){ 
+		        var resultList= data.resultList;
+		            for(var o in resultList){ 
+		         	 
+				 //var div1='<div><a href="http://127.0.0.1:8080/wcp/actionImg/PubloadfileDoc'+resultList[o].ID+'.html" >'+resultList[o].TITLE+'</a></div>';
+		         var div1='<div>'+
+		         '<a href="'+wcpUrl+'/actionImg/PubloadfileDoc'+resultList[o].ID+'.html" >'+resultList[o].TITLE
+		          +'<i class="icon-download-alt"></i></a></div>';//<span style="color: #d9534f;" class="glyphicon glyphicon-download-alt"></span>
+			
+		           var div2='<div>'+
+		           '<p >'+resultList[o].DOCDESCRIBE+'</p>';
+		           
+		           
+		           var div3='<p >'+resultList[o].FILECONTENT+'</p>';
+		           if(resultList[o].FILECONTENT!=null){
+		        	  // div2+='<p class="">-------(以下为附件中检索到的内容片段)---------</p>'+div3+'</div>';
+		        	   //div2+=div3+'</div>';
+		           }else{
+		        	   div2+='</div>';
+		           }
+		         
+		           
+		           
+		           
+			       $('#content').append(div1).append(div2); 
+			       $('#content').show(); 
+		       }  
+		        	
+		        	
+		       } ,
+	 	         error: function(err){
+	 	        	 webToast("系统出现问题，请联系请管理员！",1000);
+	 	        }
+		    });  
+	}
+	closeSpin();
+}
+
+
+
+function scroll(){
+ 	
+		$("#sItem").scrollQ();
+		
+
+}
+
+	function init(){
+		var length;
+		$.ajax({
+			url:"../broadcast/listScroll",
+			async: false,
+			type:"post",
+			data:{},
+			dataType:"json",
+			success:function(data){
+				$("#sItem").empty();
+				$("#div").empty();
+				var ul=$("#sItem");
+				length=data.length;
+				for(var i=0; i<data.length;i++){
+					var broadcast=data[i].content;
+					var li=$("<li></li>").text(broadcast).attr('class','sItem_li');
+					ul.append(li);
+				}
+				$("#scroll").append(ul);
+				
+			}
+		});  
+	
+		//scroll();
+			if(length>=5){
+		    setTimeout('scroll()',60);
+			}
+	//	setInterval('init()',5000);
+	}
+
+
+$(function(){
+	init();//初始化广播信息
+
+	connect();  //页面初始化方法
+	//setInterval(init,5000);
+});
+
+
+//连接
+function connect() {
+	loadSpin("#wrap"); //转圈
+	
+	$.ajax({
+		url :  '../WebRequest',  
+    	type : 'POST',  
+    	dataType : 'json', 
+    	data: {type: 'OrderApplyDetail',param:"new"},
+    	error : function() {
+    		closeSpin();
+           // alert(errorMsg);
+        },  
+        success : function(jsonObj) {
+        	 if(jsonObj != null){
+        		wcpUrl = jsonObj.wcpUrl;//把url赋值给全局变量
+        		initMenu(jsonObj.roleflag,jsonObj.adminflag);
+        		if (jsonObj.type == "OrderApplyDetail" && jsonObj.value == "-1"){
+					goLogin();
+				}else{
+					closeSpin();  //关闭转圈
+				}	
+            }else{
+            	closeSpin();
+            }
+        }  
+	});
+	closeSpin();
+}
+
+function changeMenuClass(index){
+	
+	$(".subMenuDiv").removeClass("subMenuDivOn");
+	$("#subMenuDiv"+index).addClass("subMenuDivOn");
+
+	$("#subMenuImg1").attr('src','../style/images/menu1.png');
+	$("#subMenuImg2").attr('src','../style/images/menu2.png'); 
+	$("#subMenuImg3").attr('src','../style/images/menu3.png'); 
+	$("#subMenuImg4").attr('src','../style/images/menu4.png'); 
+	$("#subMenuImg"+index).attr('src','../style/images/menu' + index + '_on.png'); 
+	
+	
+	var htmlTmp = "";
+	
+	if(index == 1){
+		loadSpin("#wrap"); //转圈
+		//window.location.href = "workOrderApply.html";
+		window.location.href = "newWorkOrderApply.html";
+		closeSpin();
+	}else if(index == 2){
+		loadSpin("#wrap"); //转圈
+		window.location.href = "workorderTrack.html";
+		closeSpin();
+	}else if(index == 3){
+		loadSpin("#wrap"); //转圈
+		window.location.href = "serviceValuation.html";
+		closeSpin();
+	}else if(index == 4){
+		loadSpin("#wrap"); //转圈
+		window.location.href='history.html?history=U';
+		closeSpin();
+	}else if(index == 5){
+		loadSpin("#wrap"); //转圈
+		window.location.href = "history.html?history=U";
+		htmlTmp = "";
+		closeSpin();
+	}else if(index == 6){
+		loadSpin("#wrap"); //转圈
+		if(allflag == "Y"){
+			window.location.href = "admin.html";
+		}else{					
+			window.location.href = "grabTkt.html";
+		}
+		htmlTmp = "";
+		closeSpin();
+	}
+	
+	$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+}
+
+function changeMenuMore(index){
+	if(index == 4){
+		ini_menu();  //调用popmenu.js新写的方法中
+	}
+}
+
+
+function initMenu(flag,adminflag){ 
+	allflag = adminflag; //赋值给全局变量
+	if(flag == "C"){
+		$("#menuDiv").hide();
+		$("#menuDiv2").hide();
+	}
+	else if(adminflag == "Y"){
+		$("#menuDiv").hide();
+		$("#menuDiv2").show();
+		//$("#admin_div").show();
+	}
+	else if(flag == "Y"){
+		$("#menuDiv").hide();
+		$("#menuDiv2").show();
+	}else{
+		$("#menuDiv").show();
+		$("#menuDiv2").hide();
+	}
+}
+
+</script>
+
+</head>
+<body class="sub_bg">
+
+	<!--内容start-->
+	<div class="main_area">
+    <div id="scroll" class="error_information_area">
+		        		   <ul id="sItem" class="error_ul"> </ul>
+    </div>
+    
+	<div class="btn_center">
+      <button class="width50 marginR08r" onclick="javascrtpt:window.location.href='./workOrderApply.html'">直接填单</button>
+      <button class="width50" onclick="javascrtpt:window.location.href='./guideStyleApply.html'">向导式填单</button>
+    </div>
+    <div class="search_condition">
+     <span class="search_input_area"><input type="text" class="search_input" name="word" id="word"  placeholder="问题关键字"/></span>
+      <span class="search_action" onclick="searchByWord()"></span>
+      <div class="clearfix"></div>
+    </div>
+<!--     <div class="search_condition">
+      <input type="text" class="width50 marginR08r" name="word" id="word"  placeholder="问题关键字"/>
+      <button type="button" class="width50" onclick="searchByWord()">搜索</button>
+    </div> -->
+    
+    <div class="search_result">
+        
+     <div id="content" class="guid" style="display:none;"></div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+	<!--内容end-->
+
+   
+<!--       <div class="row">
+	    <div  class="col-sm-12">
+	      <div class="col-sm-12 doc_node">
+	       <div class="media">
+	        <div class="media-body">
+	                     
+		        		<div id="scroll" style="margin-left: 4px;" class="pull-left">
+		        		   
+		        		   <ul id="sItem">
+		        		   
+		        		   </ul>
+		        		
+		        		   
+		        		</div>
+		       </div>
+		     </div>
+		  </div> 
+		</div>
+	</div>  -->
+	
+	
+	
+	
+<!-- 	 <button class="btn " type="button" onclick="javascrtpt:window.location.href='./workOrderApply.html'">直接填单</button>
+	 <button class="btn " type="button" onclick="javascrtpt:window.location.href='./guideStyleApply.html'">向导式填单</button> -->
+   
+  
+	
+	
+	
+    
+    
+<!--   <form   method="post" id="searchForm" action="">
+    <table class="table_data">
+    <tr style="height:auto;width:100%;" ><td class="text">关键字</td></tr>
+    <tr  style="height:auto;width:auto;"><td class="input"><input type="text" name="word" id="word"  placeholder="问题关键字" maxlength="100" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white;"/>
+        <button class="btn " type="button" onclick="searchByWord()">搜索</button><td></tr>
+     </table>
+   </form> -->
+   
+   
+<!--    <div class="row" >
+	    <div  class="col-sm-12">
+	      <div class="col-sm-12 doc_node">
+	       <div class="media">
+	        <div class="media-body">
+		        		<div id="content" style="margin-left: 4px;" class="pull-left">
+		        		</div>
+		       </div>
+		     </div>
+		  </div> 
+		</div>
+	</div> -->
+	
+<div id="menuDiv" class="footer_area" hidden="true">
+	      <ul class="footer_ul">
+           <li class="current"><a href="#" onclick="changeMenuClass(1)"><i class="icon_sb"></i><b>申报</b></a></li>
+           <li><a href="#" onclick="changeMenuClass(2)"><i class="icon_gz"></i><b>跟踪</b></a></li>
+           <li><a href="#" onclick="changeMenuClass(3)"><i class="icon_pj"></i><b>评价</b></a></li>
+           <li><a href="#" onclick="changeMenuClass(4)"><i class="icon_more2"></i><b>历史</b></a></li>
+          </ul>
+           <span class="bg_span"></span>
+</div> 
+
+	   
+	   <div id="menuDiv2" class="footer_area" hidden="true">
+		   <ul class="footer_ul">
+            <li  class="current"><a href="#" onclick="changeMenuClass(1)"><i class="icon_sb"></i><b>申报</b></a></li>
+            <li><a href="#" onclick="changeMenuClass(2)"><i class="icon_gz"></i><b>跟踪</b></a></li>
+            <li><a href="#" onclick="changeMenuClass(3)"><i class="icon_pj"></i><b>评价</b></a></li>
+            <li id="pop_more"><a href="#" onclick="changeMenuMore(4)"><i class="icon_more2"></i><b>更多</b></li>
+          </ul>
+	       <span class="bg_span"></span>	
+	       
+	       	
+	   </div>
+	   
+	   <!--弹出区域start-->
+	<div class="pop_area" id="pop_more_content" style="display:none;">
+       <ul class="pop_ul">
+         <li class="solid"><a href="#" onclick="changeMenuClass(5)"><i class="icon_history"></i><b>历史</b></a></li>
+         <li><a href="#" onclick="changeMenuClass(6)"><i class="icon_role"></i><b>切换角色</b></a></li>
+       </ul>
+	  </div>
+	  <!--弹出区域end-->
+	   
+ 
+   		
+</body>
+<script src="../js/app.js" ></script>
+
+</html>

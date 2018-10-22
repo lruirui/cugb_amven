@@ -1,0 +1,73 @@
+/*µ¼º½À¸ÑùÊ½*/
+
+#northDiv {
+	width: 100%;
+	height: 60px;
+	background-color: #1890FF;
+	overflow: hidden;
+}
+
+#northDivL {
+	width: 250px;
+	height: 45px;
+	float: left;
+}
+
+#northDivC, #northDivC div {
+	height: 60px;
+	line-height: 60px;
+	float: left;
+}
+
+#northDivC {
+	margin-left: 6.5%;
+}
+
+#northDivC div {
+	margin-left: 45px;
+	cursor: pointer;
+}
+
+#northDivC div span {
+	display: inline-block;
+	width: 100%;
+	height: 50px; 
+	color: #FFF;
+	font-size: 18px;
+	font-family: PingFangSC-Regular;
+}
+
+.bor {
+	font-family: PingFangSC-Medium !important;
+	border-bottom: 4px solid #FFF;
+	padding-bottom: 3px;
+	font-weight:500;
+}
+
+#northDivR {
+	float: right;
+	height: 60px;
+	color: #FFF;
+}
+
+#northDivR span {
+	height: 60px;
+	line-height: 60px;
+}
+
+#northDivR span img {
+	width: 24px;
+	height: 24px;
+	vertical-align: middle;
+	border-radius: 50%;
+	margin-right: 15px;
+}
+
+#northDivR span a {
+	width: 24px;
+	height: 24px;
+	vertical-align: middle;
+	margin: 0 40px;
+	text-decoration: none;
+	color: #FFF;
+}

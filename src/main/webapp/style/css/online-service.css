@@ -1,0 +1,343 @@
+/*线上客服样式*/
+
+.divtop {
+	padding: 16px;
+	display: flex;
+	width: 100%;
+}
+
+.divL {
+	width: 30%;
+	padding: 15px;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	margin:15px 0 0 0;
+	background: #fff;
+}
+
+.divR {
+	padding: 15px;
+	position: absolute;
+	left: 34%;
+	top: 0;
+	bottom: 0;
+	right: 0;
+	background: #fff;
+    margin-top: 15px;
+}
+
+h3 {
+	position: relative;
+	font-family: PingFangSC-Regular;
+	font-size: 18px;
+	color: #679AFA;
+	letter-spacing: 0;
+	padding-left: 10px;
+}
+
+h3 i {
+	dispaly: block;
+	width: 3px;
+	height: 14px;
+	background-color: #679AFA;
+	position: absolute;
+	top: 6px;
+	left: 0;
+}
+
+.readBtn {
+	position: absolute;
+	right: 0;
+	width: 100px;
+	height: 28px;
+	border: 1px solid #1890FF;
+	border-radius: 4px;
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #1890FF;
+	letter-spacing: 0;
+	background: none;
+	outline: none;
+	cursor: pointer;
+}
+
+.readBtn:focus {
+	background: #1890FF;
+	color: #FFF;
+}
+/*左边部分开始*/
+.service {
+	margin-top: 16px;
+	height: calc(100% - 26px);
+	overflow-y: auto;
+	border-top: 1px solid #EFEFEF;
+}
+
+.divcss5 {
+	border-top: 1px solid #EFEFEF;
+	border-bottom: 1px solid #EFEFEF;
+}
+
+.divcss5 a {
+	text-decoration: none;
+}
+
+.divcss5 p {
+	position: relative;
+}
+
+.divcss5 p:nth-child(1) {
+	padding-top: 11px;
+}
+
+.divcss5 p:nth-child(2) {
+	padding-bottom: 14px;
+}
+
+.divcss5 .userName {
+	font-family: PingFangSC-Regular;
+	font-size: 16px;
+	color: #333333;
+	letter-spacing: 0;
+}
+
+.divcss5 .hitIcon {
+	position: absolute;
+	top: 4px;
+	dispaly: block;
+	width: 8px;
+	height: 8px;
+	background: #FF7878;
+	border-radius: 50%;
+	margin-right: 18px;
+	margin-top: 7px;
+	dispaly: block;
+}
+
+.divcss5 .content {
+	font-family: PingFangSC-Regular;
+	font-size: 13px;
+	color: #8C8C8C;
+	letter-spacing: 0;
+}
+
+.divcss5 .createTime {
+	ont-family: PingFangSC-Regular;
+	font-size: 12px;
+	color: #999999;
+	letter-spacing: 0;
+	float: right;
+	margin-right: 18px;
+	font-style: normal;
+}
+/*左边部分结束*/
+/*右边部分开始*/
+.reaction {
+	margin-top: 16px;
+	border-top: 1px solid #EFEFEF;
+	padding: 23px;
+	height: calc(100% - 236px) !important;
+	overflow-y: auto;
+}
+
+.reaction .chat_time {
+	font-family: PingFangSC-Regular;
+	font-size: 13px;
+	color: #FFFFFF;
+	text-align: center;
+	padding: 2px 16px;
+	background-color: #DADADA;
+	border-radius: 4px;
+	position: relative;
+	left: 50%;
+	margin-left: -80px;
+	margin-top: 20px;
+	display: inline-block;
+}
+
+.reaction .chat_time:first-child {
+	margin-top: 0;
+}
+
+.reaction .pic {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: #FFECDD;
+	font-family: PingFangSC-Regular;
+	font-size: 13px;
+	color: #ECB564;
+	letter-spacing: 0;
+	text-align: center;
+	line-height: 40px;
+	position: relative;
+	z-index: 2;
+}
+
+.reaction .userName {
+	font-family: PingFangSC-Regular;
+	font-size: 13px;
+	color: #333333;
+	letter-spacing: 0;
+}
+
+.reaction .userInfo {
+	margin-top: 30px;
+}
+
+.reaction .userIcon {
+	text-align: center;
+}
+
+.reaction .content {
+	margin-left: 24px;
+	border-radius: 0px 18px 18px 18px;
+	padding: 20px;
+	background: #ECF4FC;
+	 max-width: 85%;
+	vertical-align: top;
+	position: relative;
+	font-size:13px
+}
+
+.userIcon1 {
+	width: 40px;
+	height: 40px;
+	position: absolute;
+	background: #ECF4FC;
+	top: 0;
+	left: -20px;
+}
+
+.userIcon2 {
+	width: 60px;
+	height: 40px;
+	position: absolute;
+	border-radius: 0px 30px 0px 0px;
+	top: 0;
+	left: -60px;
+	background: #FFF;
+}
+
+.reaction .serveIcon {
+	text-align: center;
+}
+
+.reaction .servePic {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: #DEEFFF;
+	font-family: PingFangSC-Regular;
+	font-size: 18px;
+	color: #679AFA;
+	letter-spacing: 0;
+	text-align: center;
+	line-height: 40px;
+	font-size: 13px;
+	color: #679AFA;
+	letter-spacing: 0;
+	position: relative;
+	z-index: 2;
+}
+
+.reaction .serveInfo {
+	text-align: right;
+	margin-top: 30px;
+}
+
+.reaction .serveContent {
+	background: #1890FF;
+	border-radius: 18px 0 18px 18px;
+	padding: 20px;
+	font-family: PingFangSC-Regular;
+	font-size: 13px;
+	color: #FFFFFF;
+	text-align: left;
+	position: relative;
+	margin-right: 24px;
+	max-width: 85%; 
+	vertical-align: top;
+	position: relative;
+}
+
+.serveIcon1 {
+	width: 40px;
+	height: 40px;
+	position: absolute;
+	background: #1890FF;
+	top: 0;
+	right: -20px;
+}
+
+.serveIcon2 {
+	width: 60px;
+	height: 40px;
+	position: absolute;
+	border-radius: 30px 0px 0px 0px;
+	top: 0;
+	right: -60px;
+	background: #FFF;
+}
+
+.reaction .serveName {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #333333;
+	letter-spacing: 0;
+}
+
+#reply {
+	margin-top: 20px;
+	padding-top: 20px;
+	border-top: 1px solid #EFEFEF;
+}
+
+#reply .chatValue {
+	width: 80%;
+	height: 120px;
+	overflow-y: auto;
+	resize: none;
+	border: none;
+	outline: none;
+	font-size: 16px;
+}
+
+#send {
+	position: relative;
+}
+
+.submitBtn {
+	width: 44px;
+	height: 38px;
+	color: #1890FF;
+	font-size: 45px;
+	cursor: pointer;
+	transform: translate(20px, -20px);
+}
+
+::-webkit-input-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+:-moz-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+::-moz-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+
+:-ms-input-placeholder {
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #999999;
+}
+/*右边部分结束*/

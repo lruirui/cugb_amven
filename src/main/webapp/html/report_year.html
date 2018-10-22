@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+        <script src="../js/jquery/1.8.0/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="../js/jquery/jquery-ui.min.js"></script>
+	<script src="../js/popmenu.js" ></script>
+	<script type="text/javascript" src="../js/echarts.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script> 
+	<script src="../js/alertPopShow.js" ></script> 
+	
+    <script src="../jslib/easyui1.4.2/jquery.min.js"></script>
+	<script src="../jslib/jquery.validate.js"></script>
+	<script src="../js/jquery.cookie.js"></script>
+	<link rel="stylesheet" href="../jslib/easyui1.4.2/themes/gray/easyui.css" />
+	<link rel="stylesheet" href="../jslib/easyui1.4.2/themes/icon.css" />
+	<script src="../jslib/easyui1.4.2/jquery.easyui.min.js"></script>
+	<script src="../jslib/easyui1.4.2/locale/easyui-lang-zh_CN.js"></script>
+	
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+	<link rel="stylesheet" href="../style/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="../style/css/bootstrap-theme.min.css" />	
+	<link rel="stylesheet" href="../style/css/reportvx.css" />
+	<link rel="stylesheet" href="../style/css/common.css" />
+	<link rel="stylesheet" href="../style/css/main.css" />
+	
+	<script src="../jslib/extJs.js"></script>
+	<script src="../jslib/cugb.js"></script>
+    <title></title>
+
+	<script type="text/javascript">
+		
+		var slideIndex = 1;
+		showSlides(slideIndex);
+
+		function plusSlides(n) {
+		  showSlides(slideIndex += n);
+		}
+
+		function currentSlide(n) {
+		  showSlides(slideIndex = n);
+		}
+
+		function showSlides(n) {
+		  var i;
+		  var slides = document.getElementsByClassName("mySlides");
+		  var dots = document.getElementsByClassName("dot");
+		  if (n > slides.length) {slideIndex = 1}    
+		  if (n < 1) {slideIndex = slides.length}
+		  for (i = 0; i < slides.length; i++) {
+			  slides[i].style.display = "none";  
+		  }
+		  for (i = 0; i < dots.length; i++) {
+			  dots[i].className = dots[i].className.replace(" active", "");
+		  }
+		  $(slides[slideIndex-1]).css("display", "block");
+		  $(dots[slideIndex-1]).addClass("active");
+		}
+		
+		
+		function changeMenuMore(index){
+			if(index == 4){
+				ini_menu();  //调用popmenu.js新写的方法中
+			}
+		}
+		
+		 function showErrorInfo(parentObj,createId,content){
+			 var htmlTmp = "";
+		    	htmlTmp += '<span class="sub_content_size"><ul class="rank"><li><i>目前暂无记录</i></li></ul></span>';
+		    	//$("#positionReport").get(0).innerHTML = htmlTmp;
+		    	$(parentObj).html(htmlTmp);
+		    	closeSpin();
+		/* 	$(parentObj).html('<label id="'+createId+'" style="font-size:\'18px\'">'+content+'</label>')
+			.css({'background-color':'#f3f3f3','text-align':'center'});
+			$("#"+createId).css({'font-size':'18px',
+				'line-height':$('#'+createId).parent().height()+'px'}); */
+	      }
+		 function showNullworkNumberReport(){
+		    	var htmlTmp = "";
+		    	htmlTmp += '<span class="sub_content_size"><ul class="rank"><li><i>目前暂无记录</i></li></ul></span>';
+		    	$("#workNumberReport").get(0).innerHTML = htmlTmp;
+		    	closeSpin();
+		    }
+		  
+		   	function showworkNumberReport(data){
+				var htmlTmp = "";
+				var htmlTmp = '<span class="sub_content_size">';
+				htmlTmp += '<ul class="rank">';
+				htmlTmp+='<li><a href="#" class="align_center series"><i>服务人员工作量统计</i></a></li>';
+				for(i = 0;i < data.result.length;i++){
+					htmlTmp += '<li><a href="#"><i>'+data.result[i].procEmpName+'</i><b>'+data.result[i].countNum+'</b></a></li>';
+				}
+				htmlTmp += '</ul>';
+				htmlTmp += '</span>';			    		
+	    		$("#workNumberReport").get(0).innerHTML = htmlTmp;	    	
+			}
+		
+		   	
+		  function showNulljobTypeReport(){
+		    	var htmlTmp = "";
+		    	htmlTmp += '<span class="sub_content_size"><ul class="rank"><li><i>目前暂无记录</i></li></ul></span>';
+		    	$("#jobTypeReport").get(0).innerHTML = htmlTmp;
+		    	closeSpin();
+		    }
+		  function showNullqueTypeReport(){
+		    	var htmlTmp = "";
+		    	htmlTmp += '<span class="sub_content_size"><ul class="rank"><li><i>目前暂无记录</i></li></ul></span>';
+		    	$("#queTypeReport").get(0).innerHTML = htmlTmp;
+		    	closeSpin();
+		    }
+		  function showNullpositionReport(){
+		    	var htmlTmp = "";
+		    	htmlTmp += '<span class="sub_content_size"><ul class="rank"><li><i>目前暂无记录</i></li></ul></span>';
+		    	$("#positionReport").get(0).innerHTML = htmlTmp;
+		    	closeSpin();
+		    }
+		
+        function changeMenuClass(index){
+			
+			var htmlTmp = "";
+			
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "admin.html";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+					window.location.href = "wcp.html";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+					window.location.href = "report.html";
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				window.location.href='history.html?history=U';
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=U";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 7){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+	
+		function init(){
+			//工作类型
+	    	$.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'jobTypeReport', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+         				function(e){
+         				  var button = $(e.target).attr('class');
+         				  if(button == 'ok'){
+         					this.hide();
+         				  }	
+         				}
+         			);
+		            
+		        },  
+		        success : function(data) {
+	        	   if(data != null){
+		            	if(data.type == "jobTypeReport" && data.value == "-1"){
+		            		goLogin();
+		            	}else if(data.type == "jobTypeReport" && data.value == "1"&&data.result!=''){
+		            		showjobTypeReport(data);
+		            	}else{
+		            		showNulljobTypeReport();
+							//closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	//closeSpin();
+		            }
+		        }  
+			});
+			
+	      	  //服务人员工作量
+        	$.ajax({
+    			url :  '../AdminReport',  
+    	    	type : 'POST',  
+    	    	dataType : 'json', 
+    	    	data: {type: 'workNumberReport', time: $('#time').datetimebox('getValue'),s_type:'week'},
+    	    	error : function() {
+    	    		closeSpin();
+    	            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+      				function(e){
+      				  var button = $(e.target).attr('class');
+      				  if(button == 'ok'){
+      					this.hide();
+      				  }	
+      				}
+      			);
+    	            
+    	        },  
+    	        success : function(data) {
+            	   if(data != null){
+    	            	if(data.type == "workNumberReport" && data.value == "-1"){
+    	            		goLogin();
+    	            	}else if(data.type == "workNumberReport" && data.value == "1"&&data.result!=''){
+    	            		showworkNumberReport(data);
+    	            	}else{
+    	            		showNullworkNumberReport();
+    						//closeSpin();  //关闭转圈
+    					}	
+    	            }else{
+    	            	//closeSpin();
+    	            }
+    	        }  
+    		});
+    	 
+	      	  
+		    //问题类型
+	    	$.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'queTypeReport', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+      				function(e){
+      				  var button = $(e.target).attr('class');
+      				  if(button == 'ok'){
+      					this.hide();
+      				  }	
+      				}
+      			);
+		            
+		        },  
+		        success : function(data) {
+	        	   if(data != null){
+		            	if(data.type == "queTypeReport" && data.value == "-1"){
+		            		goLogin();
+		            	}else if(data.type == "queTypeReport" && data.value == "1"&&data.result!=''){
+		            		showqueTypeReport(data);
+		            	}else{
+		            		showNullqueTypeReport();
+							//closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	//closeSpin();
+		            }
+		        }  
+			});
+		    
+	    	//工单发生地点
+	    	$.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'positionReport', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+      				function(e){
+      				  var button = $(e.target).attr('class');
+      				  if(button == 'ok'){
+      					this.hide();
+      				  }	
+      				}
+      			);
+		            
+		        },  
+		        success : function(data) {
+	        	   if(data != null){
+		            	if(data.type == "positionReport" && data.value == "-1"){
+		            		goLogin();
+		            	}else if(data.type == "positionReport" && data.value == "1"&&data.result!=''){
+		            		showpositionReport(data);
+		            	}else{
+		            		showNullpositionReport();
+							//closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	//closeSpin();
+		            }
+		        }  
+			});
+			
+	    	function showpositionReport(data){
+				var htmlTmp = "";
+				var htmlTmp = '<span class="sub_content_size">';
+				htmlTmp += '<ul class="rank">';
+				for(i = 0;i < data.result.length;i++){
+					htmlTmp += '<li><a href="report_work_list.html?situation=buildingType&typeYear=year&time='+$('#time').datetimebox('getValue')+'&param='+data.result[i].building+'"><i>'+data.result[i].location+'</i><b>'+data.result[i].number+'</b></a></li>';
+				}
+				htmlTmp += '</ul>';
+				htmlTmp += '</span>';			    		
+	    		$("#positionReport").get(0).innerHTML = htmlTmp;	    	
+			}
+	    	
+	    	function showqueTypeReport(data){
+				var htmlTmp = "";
+				var htmlTmp = '<span class="sub_content_size">';
+				htmlTmp += '<ul class="rank">';
+				for(i = 0;i < data.result.length;i++){
+					htmlTmp += '<li><a href="report_work_list.html?situation=queType&typeYear=year&time='+$('#time').datetimebox('getValue')+'&param='+data.result[i].queType+'"><i>'+data.result[i].typeName+'</i><b>'+data.result[i].number+'</b></a></li>';
+				}
+				htmlTmp += '</ul>';
+				htmlTmp += '</span>';			    		
+	    		$("#queTypeReport").get(0).innerHTML = htmlTmp;	    	
+			}
+		 
+			function showjobTypeReport(data){
+				var htmlTmp = "";
+				var htmlTmp = '<span class="sub_content_size">';
+				htmlTmp += '<ul class="rank">';
+				for(i = 0;i < data.result.length;i++){
+					htmlTmp += '<li><a href="report_work_list.html?situation=jobType&typeYear=year&time='+$('#time').datetimebox('getValue')+'&param='+data.result[i].jobId+'"><i>'+data.result[i].jobType+'</i><b>'+data.result[i].number+'</b></a></li>';
+				}
+				htmlTmp += '</ul>';
+				htmlTmp += '</span>';
+				/*  var i=0;
+	    		for(i; i<content.length; i++){
+	    			htmlTmp += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><i class="icon-paste"></i> 服务单号 <i id="ticketNo">'
+	    				+ content[i].serviceNo 
+	    				+ '</i></a></li>';
+	    		} */	    		
+	    		$("#jobTypeReport").get(0).innerHTML = htmlTmp;	    	
+			}
+		 
+	    	function goLogin(){
+	 	    	top.location.href='/cugItsm/html/index.jsp';
+	 	    }	  
+		 
+		 //基础数据
+		 $.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'basicReport', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+         				function(e){
+         				  var button = $(e.target).attr('class');
+         				  if(button == 'ok'){
+         					this.hide();
+         				  }	
+         				}
+         			);
+		            
+		        },  
+		        success : function(data) {
+		        	//给标题赋值
+					$("#title_top").html(data.reportList.year+ '年报表');
+					$("#baseData").html(data.reportList.year+ '年基础数据');
+					$("#spanJobTypeReport").html(data.reportList.year+ '年工作类型分析');
+					$("#spanQueTypeReport").html(data.reportList.year+ '年工单问题类型');
+					$("#spanPositionReport").html(data.reportList.year+ '年工单发生地点');
+					$("#spanAnalysis").html(data.reportList.year+ '年工单问题分析');
+					$("#spanWorkNumberReport").html(data.reportList.year+ '年');
+					$("#youxian").html(data.youxian);
+					$("#wuxian").html(data.wuxian);
+					$("#qita").html(data.qita);
+					$("#zidong").html(data.zidong);
+					$("#qiangdan").html(data.qiangdan);
+					$("#rengong").html(data.rengong);
+					$("#taskEvent").html(data.taskEvent);
+					$("#countAll").html(data.countAll);
+					$("#avgTime").html(data.avgTime);					
+		        }  
+			});
+		 	//工单数量折线图
+	    	$.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'echartsOrder', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(data) {
+						$("#echartsOrder").html(data.reportList.year+ '年工单数量趋势折线图');
+					if (data.reportList.success) {
+						//data = [["2000-06-05",116],["2000-06-06",800],["2000-06-07",135],["2000-06-08",86],["2000-06-09",73],["2000-06-10",85],["2000-06-11",73],["2000-06-12",68],["2000-06-13",92],["2000-06-14",130],["2000-06-15",245],["2000-06-16",139],["2000-06-17",115],["2000-06-18",111],["2000-06-19",309],["2000-06-20",206],["2000-06-21",137],["2000-06-22",128],["2000-06-23",85],["2000-06-24",94],["2000-06-25",71],["2000-06-26",106],["2000-06-27",84],["2000-06-28",93],["2000-06-29",85],["2000-06-30",73],["2000-07-01",83],["2000-07-02",125],["2000-07-03",107],["2000-07-04",82],["2000-07-05",44],["2000-07-06",72],["2000-07-07",106],["2000-07-08",107],["2000-07-09",66],["2000-07-10",91],["2000-07-11",92],["2000-07-12",113],["2000-07-13",107],["2000-07-14",131],["2000-07-15",111],["2000-07-16",64],["2000-07-17",69],["2000-07-18",88],["2000-07-19",77],["2000-07-20",83],["2000-07-21",111],["2000-07-22",57],["2000-07-23",55],["2000-07-24",60],["2000-07-24",70]];
+						var dateList = data.reportList.time;
+						var valueList = data.reportList.cnt;
+				    	var option = {
+				    		    tooltip: {
+				    		        trigger: 'axis'
+				    		    },
+				    		    legend: {
+				    		    	show: false,
+				    		        data:['数量'],
+				    				textStyle: {
+				    	                        color: '#fff',
+				    	                        fontSize: 13
+				    	                         }
+				    		    },
+				    			grid: {
+				                        left: 5,
+				                        right: 10,
+				                        bottom: 0,
+				    					top:10,
+				                        containLabel: true
+				                    },
+				    		    xAxis:  {
+				    		        type: 'category',
+				    		        boundaryGap: false,
+				    		        data: dateList,
+				    				axisLine: {
+				    							lineStyle: {
+				    								color: '#ddd'
+				    							}
+				    		    	        }
+				    		    },
+				    		    yAxis: {
+				    		        type: 'value',
+				    		        axisLabel: {
+				    		            formatter: '{value}'
+				    		        },
+				    				axisLine: {
+				    							lineStyle: {
+				    								color: '#ddd'
+				    							}
+				    		    	        }
+				    		    },
+				    		    series: [
+				    		        {
+				    		            name:'数量',
+				    		            type:'line',
+				    		            data:valueList,
+				    					smooth: true,
+				    					itemStyle: {	
+				    	        	                normal: {	
+				    	        	                    color:'#2196F3',
+				    								},	
+				    	        	               	
+				    					},	
+				    		        },
+				    		    ]
+				    		};
+						echartOrder = echarts.init(document
+								.getElementById('echart_number_area'));
+						echartOrder.setOption(option);
+					} else {
+						showErrorInfo($('#echart_number_area'), 'echartOrderNData', data.reportList.year
+								+ '年工单数量趋势折线图暂无数据');
+					}
+		        }  
+			});
+		 
+		 
+	    	//饼图
+	    	$.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'echartsSeriesPercent', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(data) {
+		        		$("#echartSendWay").html(data.reportList.year+ '年派单占比饼状图');
+					if (data.reportList.success) {
+		        		//数据加载用循环，否则当没有数据的时候会报错。
+		        		
+		        		var cellOption = {
+		        				tooltip : {
+							         trigger: 'item',
+							         formatter: "{b} : {c}"
+							     },
+						   	    
+								series : [ {
+									type : 'pie',
+									radius : ['40%', '55%'],//这个属性可以调节是饼图内半径，外半径，如果写成radius : '55%',就是扇形饼状图
+									data : data.reportList.obj.orderStatus,
+									itemStyle : {
+										normal : {
+	        	    	                    
+											label : {
+												show : true,
+												formatter: "{b} : {c} ",
+												 textStyle: {
+	        	    	                            fontSize: 12,
+	        	        	                        color: '#fff'
+	        	    	                          },
+	        	    	                         labelLine : {
+	        	        	                        show : true,
+	        	        	                        length:1.5,
+	        	        	                        color: '#fff'
+	        	        	                    }
+											},
+											
+										},
+									 	emphasis : {
+											shadowBlur : 10,
+											shadowOffsetX : 0,
+											shadowColor : 'rgba(0, 0, 0, 0.5)'
+										} 
+									}
+								} ],
+								color: ['yellow','orange','green','gray','red']
+							    
+							}					
+						echartOrder = echarts.init(document
+								.getElementById('series_percent'));
+						echartOrder.setOption(cellOption);
+					} else {
+						showErrorInfo($('#series_percent'), 'echartOrderNData', data.reportList.year
+								+ '年派单占比饼状图暂无数据');
+					}
+		        }
+					
+			});
+	    	//处理时长折线图
+	    	$.ajax({
+				url :  '../AdminReport',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'echartsAvgTime', time: $('#time').datetimebox('getValue'),s_type:'year'},
+		    	error : function() {
+		    		closeSpin();
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(data) {
+		        		$("#echartAvgTime").html(data.reportList.year+ '年问题平均处理时长(时间/小时)折线图');						
+					if (data.reportList.success) {
+						var dateList = data.reportList.time;
+						var valueList = data.reportList.avgTime;
+				    	var option = {
+				    		    tooltip: {
+				    		        trigger: 'axis'
+				    		    },
+				    		    legend: {
+				    		    	show: false,
+				    		        data:['数量'],
+				    				textStyle: {
+				    	                        color: '#fff',
+				    	                        fontSize: 13
+				    	                         }
+				    		    },
+				    			grid: {
+				                        left: 5,
+				                        right: 10,
+				                        bottom: 0,
+				    					top:10,
+				                        containLabel: true
+				                    },
+				    		    xAxis:  {
+				    		        type: 'category',
+				    		        boundaryGap: false,
+				    		        data: dateList,
+				    				axisLine: {
+				    							lineStyle: {
+				    								color: '#ddd'
+				    							}
+				    		    	        }
+				    		    },
+				    		    yAxis: {
+				    		        type: 'value',
+				    		        axisLabel: {
+				    		            formatter: '{value}'
+				    		        },
+				    				axisLine: {
+				    							lineStyle: {
+				    								color: '#ddd'
+				    							}
+				    		    	        }
+				    		    },
+				    		    series: [
+				    		        {
+				    		            name:'数量',
+				    		            type:'line',
+				    		            data:valueList,
+				    					smooth: true,
+				    					itemStyle: {	
+				    	        	                normal: {	
+				    	        	                    color:'#2196F3',
+				    								},	
+				    	        	               	
+				    					},	
+				    		        },
+				    		    ]
+				    		};
+						echartOrder = echarts.init(document
+								.getElementById('dealwith_time'));
+						echartOrder.setOption(option);
+					} else {
+						showErrorInfo($('#dealwith_time'), 'echartOrderNData', data.reportList.year
+								+ '年问题平均处理时长(时间/小时)折线图暂无数据');
+					}
+		        }  
+			});
+			
+		}
+		
+		
+		 function loadTextArea(){
+	       	 $.ajax({
+	       			type : "POST",
+	       			url : "../AdminReport",
+	       			datatype : "json",
+	       			data:{type:'findRecord',situation:'annualReport',time : $('#time').datetimebox('getValue')},
+	       			error : function() {
+			    		closeSpin();
+			            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+	         				function(e){
+	         				  var button = $(e.target).attr('class');
+	         				  if(button == 'ok'){
+	         						$("#analysis").val("");
+	         				 		$("#analysis").removeAttr("readonly");
+	         				 	 	$("#save").show();
+	         					 	$("#reset").show();
+	         					 	$("#print").hide();
+	         					    this.hide();
+	         				  }	
+	         				}
+	         			);
+			            
+			        },  
+	       			success : function(data) {
+	       				var jsonObj=eval("(" + data +")");
+	       				if(jsonObj != null){
+			            	if(jsonObj.type == "findRecord" && jsonObj.value == "-1"){
+			            		goLogin();
+			            	}else if(jsonObj.type == "findRecord" && jsonObj.value == "1"){
+			            				    $("#analysis").val(jsonObj.analysis);
+			            					$("#analysis").attr("readonly","readonly");
+	       			 	                    $("#save").hide();
+	       			 	                    $("#reset").hide();
+			            					this.hide();
+			            	}else{
+			            		$("#analysis").val("");
+						 		$("#analysis").removeAttr("readonly");
+						 	 	$("#save").show();
+							 	$("#reset").show();
+			            	}
+	       			}
+	       		}
+	       	 });
+	       }
+		 
+		 function saveFun(){
+		        if($("#analysis").val()!=null&&$("#analysis").val()!= undefined&& $("#analysis").val()!=''){
+		       	 $.ajax({
+		       			type : "POST",
+		       			url : "../AdminReport",
+		       			datatype : "json",
+		       			data:{type:'addRecord', situation:'annualReport',time : $('#time').datetimebox('getValue'),analysis: $("#analysis").val()},
+		       			error : function() {
+				    		closeSpin();
+				            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+		         				function(e){
+		         				  var button = $(e.target).attr('class');
+		         				  if(button == 'ok'){
+		         					 $("#analysis").val("");
+		              			 	$("#analysis").focus();
+		              			 	$("#analysis").removeAttr("readonly");
+		              			 	 $("#save").show();
+		              				 $("#reset").show();
+		         					this.hide();
+		         				  }	
+		         				}
+		         			);
+				            
+				        },  
+		       			success : function(jsonObj) {
+		       				
+		       			//var jsonObj=eval("(" + jsonObj +")");//转换为json对象   
+		       			var jsonObj=JSON.parse(jsonObj); //转换为json对象   
+		       			    if(jsonObj != null){
+				            	if(jsonObj.type == "addRecord" && jsonObj.value == "-1"){
+				            		goLogin();
+				            	}else if(jsonObj.type == "addRecord" && jsonObj.value == "1"){
+				            		
+				            		popTipShow.alert('提示 ','提交成功 ', ['知道了'],
+				            				function(e){
+				            				  //callback 处理按钮事件		  
+				            				  var button = $(e.target).attr('class');
+				            				  if(button == 'ok'){
+				            					$("#analysis").attr("readonly","readonly");
+		       			 	                    $("#save").hide();
+		       			 	                    $("#reset").hide();
+				            					this.hide();
+				            				  }	
+				            				 closeSpin();  //关闭转圈
+				      		            	back(); 
+				            				}
+				            			);
+				            	}else{
+				            		popTipShow.alert('提示 ','提交失败！请重试 ', ['知道了'],
+				            				function(e){
+				            				  //callback 处理按钮事件		  
+				            				  var button = $(e.target).attr('class');
+				            				  if(button == 'ok'){
+				            					$("#analysis").val("");
+				                 			 	$("#analysis").focus();
+				                 			 	$("#analysis").removeAttr("readonly");
+				                 			 	 $("#save").show();
+				                 				 $("#reset").show();
+				            					this.hide();
+				            				  }	
+				            				  closeSpin();  //关闭转圈
+				  			            	back(); 
+				            				}
+				            		
+				            			);
+				            		
+								}	
+				            	
+				            }else{
+				            	closeSpin();
+				            }
+		       			}
+		       	 });
+		        }else{
+		        	popTipShow.alert('提示 ','请输入分析内容！', ['知道了'],
+		    				function(e){
+		    				  //callback 处理按钮事件		  
+		    				  var button = $(e.target).attr('class');
+		    				  if(button == 'ok'){
+		    					$("#analysis").val("");
+		         			 	$("#analysis").focus();
+		         			 	$("#analysis").removeAttr("readonly");
+		         			 	 $("#save").show();
+		         				 $("#reset").show();
+		    					this.hide();
+		    				  }	
+		    				  closeSpin();  //关闭转圈
+				            	back(); 
+		    				}
+		    		
+		    			);
+		        }
+		       }
+		        
+		    	function history_back(){
+		            var param= $.getUrlParam('backtime');
+					 if(param!=null){
+						 $('#time').datetimebox('setValue',param)
+					    currentSlide(3);
+					 }
+				}
+		    	
+		    	function searchFun(){
+					 loadTextArea();
+					 init();
+				}
+
+
+	$(document).ready(function() {	
+		history_back();
+		loadTextArea();
+		init();
+     });
+	</script>
+
+</head>
+<body class="sub_bg" onload="ini_menu()">
+
+	<!--内容start-->
+	<div class="main_area main_area_slide">
+
+		<div class="slideshow_container">
+			<div class="mySlides fade_in" style="display:block;">
+			   <span class="list_group align_center" id="title_top"></span>
+			   <div class="report_search_area">
+			   		<div>时间区间</div>
+			   		<input type="datetime" class="easyui-datetimebox" id="time" name="time" style="border:none" class="mr_8"></input>
+			   		<button type="button" class="btn btn-info btn-sm btn_width100" data-dismiss="modal" onclick="searchFun();">查询</button>
+			   	</div>
+			   	<div class="sub_list_area">
+			   		<span class="sub_list_group" id="baseData"></span>
+					<span class="sub_content_size">
+						<ul class="">
+							<li><a href="#" class="align_center series"><i>问题类型</i></a></li>
+							<li><a href="#"><i>有线</i><b id="youxian"></b></a></li>
+							<li><a href="#"><i>无线</i><b id="wuxian"></b></a></li>
+							<li><a href="#"><i>其它</i><b id="qita"></b></a></li>
+							<li><a href="#" class="align_center series"><i>派单方式</i></a></li>
+							<li><a href="#"><i>自动派单</i><b id="zidong"></b></a></li>
+							<li><a href="#"><i>人工派单</i><b id="rengong"></b></a></li>
+							<li><a href="#"><i>抢单</i><b id="qiangdan"></b></a></li>
+							<li><a href="#" class="series"><i>事件单数</i><b id="taskEvent"></b></a></li>
+							<li><a href="#" class="series"><i>总计</i><b id="countAll"></b></a></li>
+							<li><a href="#"><i>平均处理时长（小时）</i><b id="avgTime"></b></a></li>
+						</ul>
+					</span>
+			   	</div>
+			</div>
+			
+			<div class="mySlides fade_in">
+               <span class="list_group align_center" id="spanWorkNumberReport"></span>
+				<div class="sub_list_area" id="workNumberReport">
+					
+			   	</div>
+			</div> 
+			
+			<div class="mySlides fade_in">
+				<span class="list_group align_center" id="echartsOrder"></span>
+				<div class="echart_number_area" id="echart_number_area"></div>
+				<span class="list_group align_center" id="echartSendWay"></span>
+				<div class="echart_series_percent_area" id="series_percent"></div>
+				<span class="list_group align_center" id="echartAvgTime"></span>
+				<div class="echart_dealwith_time_area" id="dealwith_time"></div>
+			</div>
+			<div class="mySlides fade_in">
+				<span class="list_group align_center" id="spanJobTypeReport"></span>
+				<div class="sub_list_area" id="jobTypeReport">
+					<!-- <span class="sub_content_size">
+						<ul class="rank">
+							<li><a href="report_work_list.html"><i>网络咨询</i><b>5</b></a></li>
+							<li><a href="#"><i>外勤支持</i><b>5</b></a></li>
+							<li><a href="#"><i>现场支持</i><b>1</b></a></li>
+						</ul>
+					</span> -->
+			   	</div>
+			   	<span class="list_group align_center" id="spanQueTypeReport"></span>
+				<div class="sub_list_area" id="queTypeReport">
+					<!-- <span class="sub_content_size">
+						<ul class="rank">
+							<li><a href="#"><i>有线网络-网卡灯不亮</i><b>5</b></a></li>
+							<li><a href="#"><i>无线-连接不上CUG信号</i><b>3</b></a></li>
+							<li><a href="#"><i>无线-连上CUG,无法上网</i><b>2</b></a></li>
+						</ul>
+					</span> -->
+			   	</div>
+			   	<span class="list_group align_center" id="spanPositionReport"></span>
+				<div class="sub_list_area" id="positionReport">
+					<!-- <span class="sub_content_size">
+						<ul class="rank">
+							<li><a href="#"><i>北区-北四楼-1楼</i><b>2</b></a></li>
+							<li><a href="#"><i>西区-主楼西-2楼</i><b>2</b></a></li>
+							<li><a href="#"><i>西区-信息楼附楼-1楼</i><b>1</b></a></li>
+						</ul>
+					</span> -->
+			   	</div>
+			</div>
+			<div class="mySlides fade_in">
+				<span class="list_group align_center" id="spanAnalysis"></span>
+				 <div class="question_dealwith_area">
+			   		<div>分析描述</div>
+			   		<textarea id="analysis" class="question_information"></textarea>
+			   		<button id="save" type="button" class="btn btn-info btn-sm btn_width50" data-dismiss="modal" onclick="resetFun();">取消</button>
+			   		<button id="reset" type="button" class="btn btn-info btn-sm btn_width50" data-dismiss="modal" onclick="saveFun();">提交</button>
+			   	</div>
+			</div>
+		</div>
+			
+
+	</div>
+	<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+			<a class="next" onclick="plusSlides(1)">&#10095;</a>
+			<div class="text">
+				<span class="dot active" onclick="currentSlide(1)" onmouseover="currentSlide(1)"></span> 
+				<span class="dot" onclick="currentSlide(2)" onmouseover="currentSlide(2)"></span> 
+				<span class="dot" onclick="currentSlide(3)" onmouseover="currentSlide(3)"></span> 
+				<span class="dot" onclick="currentSlide(4)" onmouseover="currentSlide(4)"></span>
+				<span class="dot" onclick="currentSlide(5)" onmouseover="currentSlide(5)"></span> 
+			</div>
+	<!--内容end-->
+
+  <!--底部区域start-->
+	<div class="footer_area">
+         <ul class="footer_ul">
+            <li><a href="#" onclick="changeMenuClass(1);"><i class="icon_sb"></i><b>工单查询</b></a></li>
+            <li><a href="#" onclick="changeMenuClass(2);"><i class="icon_gz"></i><b>知识库维护</b></a></li>
+            <li class="current"><a href="#" onclick="changeMenuClass(3);"><i class="icon_pj"></i><b>报表查询</b></a></li>
+            <li id="pop_more"><a href="#" onclick="changeMenuMore(4);"><i class="icon_more2"></i><b>更多</b></li>
+          </ul>
+	<span class="bg_span"></span>
+	</div>
+	<!--底部区域end-->
+	
+	<!--弹出区域start-->
+		<div class="pop_area" id="pop_more_content" >
+       <ul class="pop_ul">
+         <li class="solid"><a href="#" onclick="changeMenuClass(5);"><i class="icon_history"></i><b>历史</b></a></li>
+         <li><a href="#" onclick="changeMenuClass(6);"><i class="icon_role"></i><b>切换角色</b></a></li>
+      	 <!-- <li><a href="#" id="changeImg"><i class="icon_change"></i><b>切换皮肤</b></a></li> -->
+       </ul>
+	  </div>
+	<!--弹出区域end-->
+	<script src="../js/app.js"></script>
+</body>
+</html>

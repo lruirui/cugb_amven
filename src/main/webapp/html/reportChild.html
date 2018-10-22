@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>报表查询</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+	<!-- <link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" /> -->
+    <link rel="stylesheet" href="../style/css/main.css" />
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+		
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script> 
+	
+		<script src="../js/popmenu.js" ></script>
+	
+	<script type="text/javascript" src="../js/jquery/jquery-ui.min.js"></script>
+	
+	<!-- <link rel="stylesheet" href="../style/css/common.css" /> -->
+	<script src="../js/alertPopShow.js" ></script> 
+	
+	<script type="text/javascript">
+	window.onpageshow = function(event){
+		   if (event.persisted) {
+		       window.location.reload();
+		   }
+		};
+		
+		
+		 
+		window.onload = function (){
+			var adminflag;
+			var reportUrl;
+			var index=$.getUrlParam('index');
+			connect(index);
+		};
+		
+		 //连接
+	    function connect(index) {
+	    	loadSpin("#wrap"); //转圈
+	    	//ajax请求示例，调用WebRequestController.java
+	    	$.ajax({
+				url :  '../Admin',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'adminFlag'},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	adminflag=jsonObj.adminflag;
+		            	reportUrl=jsonObj.reportUrl;
+		            	init(index);
+		            	if(jsonObj.type == "TrackList" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+	    	
+	    }
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }	 
+		
+		function changeMenuClass(index){
+			
+			var htmlTmp = "";
+			
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "admin.html";
+				//window.location.href = "newWorkOrderApply.html";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+					window.location.href = "wcp.html";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+					window.location.href = "report.html";
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				window.location.href='history.html?history=U';
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=U";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 7){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function init(index){
+			if(adminflag=="Y"){
+			$("#menuDiv2").show();
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				//$("#reportId").attr("src","http://localhost:8080/cugItsm/report/weekReport");
+				$("#reportId").attr("src",reportUrl+"/weekReport");
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				$("#reportId").attr("src",reportUrl+"/monthReport");
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				$("#reportId").attr("src",reportUrl+"/quarterReport");
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				$("#reportId").attr("src",reportUrl+"/annualReport");
+				closeSpin();
+			}
+		}
+		}
+		
+		function changeMenuMore(index){
+			if(index == 4){
+				ini_menu();  //调用popmenu.js新写的方法中
+			}
+		}
+		
+	  
+	</script>
+	
+	</head>
+	
+	<body class="sub_bg">
+	    	
+	    	<div id="contentDiv" class="main_area" >
+	    	<iframe id="reportId"  width="99%" height="99%" frameborder="0" ></iframe>
+	    	</div>
+	    	
+	    	
+	    	
+	   
+	    
+	    <div id="menuDiv2" class="footer_area" hidden="true">
+		   <ul class="footer_ul">
+            <li  class="current"><a href="#" onclick="changeMenuClass(1)"><i class="icon_sb"></i><b>工单查询</b></a></li>
+            <li><a href="#" onclick="changeMenuClass(2)"><i class="icon_gz"></i><b>知识库维护</b></a></li>
+            <li><a href="#" onclick="changeMenuClass(3)"><i class="icon_pj"></i><b>报表查询</b></a></li>
+            <li id="pop_more"><a href="#" onclick="changeMenuMore(4)"><i class="icon_more2"></i><b>更多</b></li>
+          </ul>
+	       <span class="bg_span"></span>	     	
+	   </div>
+	   
+	   <!--弹出区域start-->
+	<div class="pop_area" id="pop_more_content" style="display:none;">
+       <ul class="pop_ul">
+         <li class="solid"><a href="#" onclick="changeMenuClass(5)"><i class="icon_history"></i><b>历史</b></a></li>
+         <li><a href="#" onclick="changeMenuClass(6)"><i class="icon_role"></i><b>切换角色</b></a></li>
+        <!--  <li><a href="#" onclick="changeMenuClass(7)"><i class="icon_role"></i><b>切换角色</b></a></li> -->
+       </ul>
+	  </div>
+	  <!--弹出区域end-->
+	  
+	  
+	    
+	</body>
+
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>index</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+	<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" />
+		
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script> 
+	<script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+    <script src="../js/giveLngAndLat.js" ></script>   
+	
+	<link rel="stylesheet" href="../style/css/common.css" /> 
+	<script src="../js/alertPopShow.js" ></script>
+	
+	<script type="text/javascript">
+	
+		//alert("Device Name= " + getDeviceName());  //设备信息测试
+	    
+	    //var urlUserId = $.getUrlParam('userId'); // http://localhost:8080/cugbItsm/html/index.html?userId=d031764
+	    //alert("Url param userId= " + urlUserId);  //url传参测试
+	    
+	   	var errorMsg = "服务器错误!";
+	 
+	    //连接
+	    function connect() {
+	    	
+	    	loadSpin("#wrap"); //转圈
+	    	
+	    	//ajax请求示例，调用WebRequestController.java
+	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'Index', userId: 'test'},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+	        				function(e){
+	        				  //callback 处理按钮事件		  
+	        				  var button = $(e.target).attr('class');
+	        				  if(button == 'ok'){
+	        					//按下确定按钮执行的操作
+	        					//todo ....
+	        					this.hide();
+	        				  }	
+	        				}
+	        			);
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	if(jsonObj.type == "Index" && jsonObj.value == "1"){
+		            		showWorkList(jsonObj.content);
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+	    	
+	    }
+	    
+		function showWorkList(content){
+			    	
+			var htmlTmp = "";
+	    	
+    		htmlTmp += '<table class="table_data">';
+    		
+    		htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;"><td colspan="3" class="table_head">待处理之服务申请</td></tr>';
+
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			htmlTmp += '<tr onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><td nowrap style="text-align:left;vertical-align:middle;width:14%;padding:5px 10px 5px 10px;"><img src="../style/images/icon_order.png"></td><td>服务单号 <span>' 
+    				+ content[i].serviceNo 
+    				+ '</span></td><td nowrap style="text-align:right;vertical-align:right;width:8%;padding:0px 10px 0px 5px;"><img src="../style/images/icon_next.png"></td></tr>';
+    		}
+    		
+    		htmlTmp += '</table>';
+    		
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	
+	    	
+	    	closeSpin();
+		}
+	    
+		function getOrderDetail(serviceNo){
+			
+			loadSpin("#wrap"); //转圈
+			
+			//alert("detail no=" + serviceNo);
+			
+			popTipShow.alert('提示 ',"detail no=" + serviceNo, ['知道了'],
+    				function(e){
+    				  //callback 处理按钮事件		  
+    				  var button = $(e.target).attr('class');
+    				  if(button == 'ok'){
+    					//按下确定按钮执行的操作
+    					//todo ....
+    					this.hide();
+    				  }
+    				  closeSpin();
+    				}
+    			);
+			
+			
+			
+			
+		}
+		
+		 
+		window.onload = function (){
+			 
+			//connect();  //页面初始化方法
+			
+		};
+		
+		function changeMenuClass(index){
+			
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+
+			$("#subMenuImg1").attr('src','../style/images/menu1.png');
+			$("#subMenuImg2").attr('src','../style/images/menu2.png'); 
+			$("#subMenuImg3").attr('src','../style/images/menu3.png'); 
+			$("#subMenuImg4").attr('src','../style/images/menu4.png'); 
+			$("#subMenuImg"+index).attr('src','../style/images/menu' + index + '_on.png'); 
+			
+			
+			var htmlTmp = "";
+			
+			if(index == 2){
+				loadSpin("#wrap"); //转圈
+				htmlTmp = "页面2";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				htmlTmp = "页面3";
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				htmlTmp = "页面4";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		
+	  
+	</script>
+	
+	</head>
+	
+	<body>
+	
+	
+	    	<div id="contentDiv" class="contentDiv">
+		    	<table class="table_data_form">
+		    	
+		    		<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;"><td colspan="2" class="table_head">服务申请</td></tr>
+		    		<tr><td><span>填单人</span></td><td><input type="text" id="empName"/></td></tr>
+		    		<tr><td><span>学工号</span></td><td><input type="text" id="stuEmpno"/></td></tr>
+		    		<tr><td><span>联络方式</span></td><td><input type="text" id="tel"/></td></tr>
+		    		<tr><td><span>微信号</span></td><td><input type="text" id="webchat"/></td></tr>
+		    		
+		    		<tr><td><span>服务地点</span></td><td><input type="text" style="width:45%;" id="building"/><input type="text" style="width:45%;" id="floor"/></td></tr>
+		    		<tr><td></td><td><input type="text" id="location" placeholder="请填写详细地址"/></td></tr>
+		    		
+		    		<tr><td><span>问题类型</span></td><td><input type="text" id="quetype"/></td></tr>
+		    		<tr><td><span>问题描述</span></td><td><input type="text" id="quedesc"/></td></tr>
+		    		<tr><td><span>附件上传</span></td><td><input type="text" id="tel"/></td></tr>
+		    		
+		    		
+		    	</table>
+	    	</div>
+	    	
+	    	<div id="menuDiv" class="menuDiv">
+		    	<div id="subMenuDiv1" class="subMenuDivOn">
+		    		<img id="subMenuImg1"  src="../style/images/menu1_on.png"><br><span style="vertical-align:middle;">申请</span>
+	    		</div>
+	    		<div id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><br><span style="vertical-align:middle;">跟踪</span>
+	    		</div>
+	    		<div id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3"  src="../style/images/menu3.png"><br><span style="vertical-align:middle;">评价
+	    		</div>
+	    		<div id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuClass(4)">
+		    		<img id="subMenuImg4"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;">历史
+	    		</div>
+	    	</div>
+		    
+
+	    
+	</body>
+
+</html>

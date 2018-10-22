@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>向导式工单申报第一步</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+	<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" />
+
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script>
+	
+	<link rel="stylesheet" href="../style/css/common.css" /> 
+	<script src="../js/alertPopShow.js" ></script>
+	<script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+	<script src="../js/giveLngAndLat.js" ></script>    
+	<style type="text/css">
+		.trackTD{
+			 nowrap;
+			 text-align:left;
+			 vertical-align:middle;
+			 width:30%;
+			 padding:5px 0px 5px 10px; 
+			 
+		}
+		
+		.trackTDVal{
+			 text-align:left;
+			 vertical-align:middle;
+			 padding:5px 10px 5px 10px;
+			 font-Weight:bold;
+			 color:black; 
+		}
+		.trackBtn{
+			 nowrap;
+			 vertical-align:middle;
+			 padding:10px 0px 5px 5px;
+			 text-align:right;
+			 padding-right:20px;
+		}
+		input {
+ 			border: 1px solid #2468a2;
+		}
+		.file {
+		    position: relative;
+		    display: inline-block;
+		    overflow: hidden;
+		    color: #1E88C7;
+		    text-decoration: none;
+		    text-indent: 0;
+		    width: 40px;
+		    height: 30px;
+		    background: url(../style/images/icon_camera.png) no-repeat;
+		    background-size:100% 100%;
+		}
+		.file input {
+			width:40px;
+			height:30px;
+		    position: absolute;
+		    left: 0;
+		    top: 0;
+		    opacity: 0;
+		    border:none;
+		}
+		.IMG{
+			width:100px;
+			height:150px;
+			display:inline-block;
+		}
+		.big{
+			position:fixed;
+			left:50%;
+			right:50%;
+			top:50%;
+			bottom:50%;
+			width:100%;
+			height:100%;
+		}
+		
+	</style>
+	<script type="text/javascript">
+	
+	   	var errorMsg = "服务器错误!";
+	   	var maxFileSizeMsg = "图片太大，请上传10M以内的照片!";
+	 
+	   	var allInfoToLou = null;
+	   	var areaInfoToBack = null;
+
+		var orderTypeChildTwoList=null;
+
+	    //连接
+	    function connect() {
+	 
+			loadSpin("#wrap"); //转圈
+	    	
+	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'OrderApplyDetail'},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		initMenu(jsonObj.roleflag);
+		        		if (jsonObj.type == "OrderApplyDetail" && jsonObj.value == "-1"){
+							goLogin();
+						}else
+		            	if(jsonObj.type == "OrderApplyDetail" && jsonObj.value == "1"){
+		            		var content=jsonObj.content;
+		            		if(isEmptyStr(content.filler)||isEmptyStr(content.stuEmpno)||isEmptyStr(content.tel)||isEmptyStr(content.wechat)){
+		            		showWorkOrder(jsonObj.content,eval(jsonObj.jstoArea.buildingListToArea),eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            		}else{
+		            			window.location.href = "guideStyleApply2.html";
+		            		}
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			closeSpin();
+	    }
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }
+		
+		
+		//明细
+		function showWorkOrder(content,jstoArea,orderTypeFatherList,orderTypeChildList){
+			allInfoToLou = content.locations;//赋值给全局变量
+			orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量
+			$("#contentDiv").get(0).innerHTML = "";
+			var htmlTmp = "";
+			htmlTmp += '<form   method="post" id="workOrderAddForm" action="${ctx}/workorderInput/add" enctype="multipart/form-data">';
+    		htmlTmp += '<table class="table_data">';
+    		htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;color:#00BFFF;"><td colspan="2" class="table_head">故障申报服务工单申请</td></tr>';
+    		htmlTmp += '<tr><td colspan="2" class="tickno_head"><img style="vertical-align:middle; max-width:100%; width: 30px; padding-left: 10px;  padding-right: 15px;'
+        	htmlTmp += 'padding-top: 8px; padding-bottom: 8px;  margin-left: 0px;" src="../style/images/icon_order.png">服务单号 <span id="ticketNo">'+ content.ticketNo + '</span></td></tr>';
+        	htmlTmp += '<tr><td class="trackTD">填单人</td><td class="trackTDVal"><input type="text" name="filler" id="filler" value="'+content.filler+'" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/></td></tr>';
+			htmlTmp += '<tr><td class="trackTD">学工号</td><td class="trackTDVal"><input type="text" name="stuEmpno" id="stuEmpno" value="'+content.stuEmpno+'"style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/></td></tr>';
+			htmlTmp += '<tr><td class="trackTD">联络方式</td><td class="trackTDVal"><input type="text" name="tel" id="tel" value="'+content.tel+'" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/></td></tr>';
+			htmlTmp += '<tr><td class="trackTD">微信号</td><td class="trackTDVal"><input type="text" name="webchat" id="webchat" value="'+content.webchat+'" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/><input type="text" id="tempTicketNo" value="" hidden="true"/></td></tr>';
+			
+			
+			htmlTmp += '<tr><td class="trackTD" ></td><td class="trackBtn" colspan="1">'; 
+   			htmlTmp += '<button type="button" class="button blue" id="btn" onclick="next()">下一步</button>';
+   		 	//var shtmlTmp ="";
+   			//shtmlTmp += '<button type="button" class="button blue" onclick="send('+content.ticketNo +')">提交</button>';
+   			//alert("shtmlTmp---" +shtmlTmp); 
+   			//htmlTmp += '<button type="button" class="button blue" onclick="clearVal()">返回</button>';
+   			htmlTmp += '<button type="button" class="button blue" onclick="back()">返回</button>';
+   			
+   			htmlTmp += '</td></tr>';
+   			
+   		 /* 	htmlTmp +='<tr ><td class="trackTD">关键字</td><td class="trackTDVal"><input type="text" name="word" id="word" maxlength="100" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/>';
+   			htmlTmp += '<button class="button blue" type="button" onclick="searchByWord()">搜索</button></td></tr>'; */
+   			
+   			htmlTmp += '</table>';
+   			htmlTmp += '</form>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	
+	    	
+	    	closeSpin();
+		}
+		
+		// Check string not empty
+		function isEmptyStr(s)
+		{
+		    return ((s==null) || ($.trim(s).length == 0));
+		}
+		
+
+		 
+
+		
+		//下一步
+		function next(){
+			loadSpin("#wrap"); //转圈
+			var filler=$("#filler").attr("value");	
+			var stuEmpno=$("#stuEmpno").attr("value");
+			var tel=$("#tel").attr("value");	
+		 	var webchat=$("#webchat").attr("value");	
+		 	if(isEmptyStr(filler)){
+		 		popTipShow.alert('提示','请输入姓名！', ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        					$("#filler").focus();
+        				  closeSpin();  //关闭转圈
+        				}
+        			);
+				return false;
+		 	}
+	 	 	if(isEmptyStr(stuEmpno)){
+	 	 		popTipShow.alert('提示','请输入学工号！', ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        					$("#stuEmpno").focus();
+        				  closeSpin();  //关闭转圈
+        				}
+        			);
+				return false;
+		 	}
+ 
+		 	if(isEmptyStr(tel)){
+		 		popTipShow.alert('提示','请输入联络方式！', ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        					$("#tel").focus();
+        				  closeSpin();  //关闭转圈
+        				}
+        			);
+				return false;
+		 	}
+		 	if(isEmptyStr(webchat)){
+		 		popTipShow.alert('提示','请输入微信号！', ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        					$("#webchat").focus();
+        				  closeSpin();  //关闭转圈
+        				}
+        			);
+				return false;
+		 	}
+			
+			window.location.href = "guideStyleApply2.html";
+			htmlTmp = "";
+			closeSpin();
+		}
+		
+		//返回
+		function back(){
+			loadSpin("#wrap"); //转圈
+			window.location.href = "workorderTrack.html";
+			htmlTmp = "";
+			closeSpin();
+		}
+		
+		
+		
+ 		
+		
+
+		
+		
+		window.onload = function (){
+			 
+			connect();  //页面初始化方法
+			
+		};
+		
+		function changeMenuClass(index){
+			
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+
+			$("#subMenuImg1").attr('src','../style/images/menu1.png');
+			$("#subMenuImg2").attr('src','../style/images/menu2.png'); 
+			$("#subMenuImg3").attr('src','../style/images/menu3.png'); 
+			$("#subMenuImg4").attr('src','../style/images/menu4.png'); 
+			$("#subMenuImg"+index).attr('src','../style/images/menu' + index + '_on.png'); 
+			
+			
+			var htmlTmp = "";
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				//window.location.href = "workOrderApply.html";
+				window.location.href = "newWorkOrderApply.html";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "serviceValuation.html";
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				window.location.href='history.html?history=U';
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=U";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "grabTkt.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function changeMenuMore(index){
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+			if(index == 4){
+				$("#subMenuDiv_div").slideToggle(300);
+				$("#subMenuDiv"+index).removeClass("subMenuDivOn");
+			}
+		}
+		
+		function initMenu(flag){ 
+			if(flag == "C"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").hide();
+			}
+			else if(flag == "Y"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").show();
+			}else{
+				$("#menuDiv").show();
+				$("#menuDiv2").hide();
+			}
+		}
+		
+		
+	</script>
+	
+	</head>
+	
+	<body>
+	    	<div id="contentDiv" class="contentDiv">
+		    	
+	    	</div>
+	    	
+	    	
+	    	<div id="menuDiv" class="menuDiv" hidden="true">
+		    	<div id="subMenuDiv1" class="subMenuDiv" onclick="changeMenuClass(1)">
+		    		<img id="subMenuImg1"  src="../style/images/menu1.png"><span style="vertical-align:middle;margin-top:10px;">申报</span>
+	    		</div>
+	    		<div id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><span style="vertical-align:middle;margin-top:10px;">跟踪</span>
+	    		</div>
+	    		<div id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3" src="../style/images/menu3.png"><span style="vertical-align:middle;margin-top:10px;">评价</span>
+	    		</div>
+	    		<div id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuClass(4)">
+		    		<img id="subMenuImg4"  src="../style/images/menu4.png"><span style="vertical-align:middle;margin-top:10px;">历史</span>
+	    		</div>
+	    	</div>
+		    
+			<div id="menuDiv2" class="menuDiv" hidden="true">
+	    		<ul style="width: 100%">
+		    	<li id="subMenuDiv1" class="subMenuDiv" onclick="changeMenuClass(1)">
+		    		<img id="subMenuImg1"  src="../style/images/menu1.png"><span style="vertical-align:middle;margin-top:10px;">申报</span>
+	    		</li>
+	    		<li id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><span style="vertical-align:middle;margin-top:10px;">跟踪</span>
+	    		</li>
+	    		<li id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3"  src="../style/images/menu3.png"><span style="vertical-align:middle;margin-top:10px;">评价</span>
+	    		</li>
+	    		
+	    		<li id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuMore(4)">
+	    			 <div class = "subMenuDiv_div" id = "subMenuDiv_div" hidden="true">
+		    			<ul id = "subMenuDiv_ul">
+		    			<li class="subMenuLi" onclick="changeMenuClass(5)"><img id="subMenuImg4_1"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;margin-top:10px;">历史</span>
+	    				</li>
+	    				<li class="subMenuLi" onclick="changeMenuClass(6)"><img id="subMenuImg4_2"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;margin-top:10px;">切换角色</span>
+	    				</li>
+	    				</ul>
+	    			</div>
+	    			<img id="subMenuImg4" src="../style/images/menu4.png"><span style="vertical-align:middle;margin-top:10px;">更多</span>
+	    		</li>
+	    		</ul>
+	    	</div>
+	    
+	</body>
+	<style type="text/css">
+	#menuDiv ul li,#menuDiv2 ul li{  float:left; list-style-type:none;}
+	#subMenuDiv_ul{ margin-top:-165%; width:100%;position: relative} 	
+	
+.button{
+width: 70px;
+line-height: 30px;
+text-align: center;
+font-weight: bold;
+color: #fff;
+margin:0 10px 10px 0;
+position: relative;
+overflow: hidden;
+}
+.button:nth-child(6n){
+margin-right: 0;
+}
+.pic{
+width:40px;
+height:30px;
+border:none;
+background-image:url(../style/images/icon_camera.png);
+background-size:100% 100%;
+background-color:transparent;
+}
+
+.button.blue{
+border:1px solid #32CD32;
+box-shadow: 0 1px 2px #32CD32 inset,0 -1px 0 #32CD32 inset,0 -2px 3px #32CD32 inset;
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+border:none;
+border-radius:4px;
+}
+
+.button.grey {
+	background:#B7BEC2;
+	border:none;
+}
+
+
+.blue:hover{
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+}
+
+.blue:active{
+top:1px;
+box-shadow: 0 1px 3px #3CB371 inset,0 3px 0 #32CD32;
+background: -webkit-linear-gradient(top,#3CB371,#3CB371);
+background: -moz-linear-gradient(top,#3CB371,#3CB371);
+background: linear-gradient(top,#3CB371,#3CB371);
+}
+
+.blue.side:hover:after{
+background:-webkit-linear-gradient(right,#32CD32,#3CB371 60%);
+background:-moz-linear-gradient(right,#32CD32,#3CB371 60%);
+background:linear-gradient(right,#32CD32,#3CB371 60%); 
+}
+
+.blue.side:active:after{
+box-shadow:-1px 0 1px #114566 inset;
+background:-webkit-linear-gradient(right,#3CB371,#3CB371 60%);
+background:-moz-linear-gradient(right,#3CB371,#3CB371 60%);
+background:linear-gradient(right,#3CB371,#3CB371 60%); 
+}
+
+.blue.rarrow:hover:after,
+	.blue.larrow:hover:after{
+background:-webkit-linear-gradient(top left,#70bfef,#4097ce);
+background:-moz-linear-gradient(top left,#70bfef,#4097ce);
+background:linear-gradient(top left,#70bfef,#4097ce);
+}
+
+.blue.rarrow:active:after,
+	.blue.larrow:active:after{
+background:-webkit-linear-gradient(top left,#1a71a8,#1976b1);
+background:-moz-linear-gradient(top left,#1a71a8,#1976b1);
+background:linear-gradient(top left,#1a71a8,#1976b1);
+}
+
+.blue.rarrow:active:after{
+box-shadow: 0 1px 0 #114566 inset,-1px 0 0 #114566 inset;
+}
+.blue.larrow:active:after{
+box-shadow: 0 -1px 0 #114566 inset,1px 0 0 #114566 inset;
+}
+	</style>
+</html>

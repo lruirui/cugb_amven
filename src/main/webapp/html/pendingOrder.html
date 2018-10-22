@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>待处理工单</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+<!-- 	<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" /> -->
+	<link rel="stylesheet" href="../style/css/common.css" />
+    <link rel="stylesheet" href="../style/css/main.css" />
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script>
+	
+    <script src="../js/popmenu.js" ></script>
+    <script src="../js/slide.js" ></script>
+	
+	<script type="text/javascript" src="../js/jquery/jquery-ui.min.js"></script>
+	
+ 	
+	<script src="../js/alertPopShow.js" ></script> 
+	<script type="text/Javascript" src="https://3gimg.QQ.com/lightmap/components/geolocation/geolocation.min.js"></script><!-- 腾讯获取坐标需要引入的 -->
+    <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+ 	<script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+	<script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+    <script src="../js/giveLngAndLat.js" ></script>   
+	
+	<script type="text/javascript">
+	
+	   	var errorMsg = "服务器错误!";
+	   	var orderTypeChildTwoList=null;//定义全局变量
+	   	var param = $.getUrlParam('param');
+	   	var stuEmpno=null;
+	   	
+		window.onpageshow = function(event){
+			   if (event.persisted) {
+			       window.location.reload();
+			   }
+			};
+	 
+	    //连接
+	    function connect() {
+	    	loadSpin("#wrap"); //转圈
+	    	$.ajax({
+				url :  '../pendingOrder',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'list',param:param},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	if(jsonObj != null){
+		        		initMenuAdmin(jsonObj.adminflag);
+		        		if(jsonObj.type == "list" && jsonObj.value == "-1"){
+		        			goLogin();
+		            	}else if(jsonObj.type == "list" && jsonObj.value == "1"){
+		            		stuEmpno=jsonObj.stuEmpno;
+		            		showWorkList(jsonObj.content);
+		            	}else if(jsonObj.type == "list" && jsonObj.value == "0"){
+		            		showNullInfo();
+		            	}
+		            	else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+	    }
+
+	    
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }
+	    function showNullInfo(){
+	    	var htmlTmp = "";
+	    	/* htmlTmp += '<table class="table_data">';
+	    	htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;color:#00BFFF;"><td colspan="3" class="table_head">待处理工单</td></tr>';
+	    	htmlTmp += '<tr style="vertical-align:middle;"><td style="color:#FF7F00;vertical-align:middle;" colspan="3" class="table_head">目前暂无待处理工单</td></tr>';
+	    	htmlTmp += '</table>'; */
+	    	htmlTmp += '<span class="list_group nodata">待处理工单</span>';
+	    	htmlTmp += '<span class="list_group_detail">目前暂无待处理工单</span>'; 
+	    	$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	closeSpin();
+	    }
+	    
+		//改变问题类型的值
+		function setChange(parentValue){
+			var info = "";
+			for(var i=0;i<orderTypeChildTwoList.length;i++){ 
+				if(parentValue==orderTypeChildTwoList[i].pid){
+					info +="<option value="+orderTypeChildTwoList[i].uniqueID+">"+orderTypeChildTwoList[i].typeName+"</option>";
+				}
+				
+			}			
+			$("#procQueType").html(info);
+		}
+		
+		//部门和角色的二级联动
+		
+		function showRole(){
+		
+			$("#roleIDSelect option").remove();
+			//alert($("#roleIDSelect").val());
+			//var deptId = $(this).val();
+			var deptId =$("#deptIDSelect option:selected").val();
+			console.log(deptId);
+			//alert("deptId:"+deptId);
+			if(deptId != ""){
+				var url = "../pendingOrder";
+				var args = {"deptId":deptId,type: 'getRole',"time":new Date()};
+				$.getJSON(url,args,function(data){
+					if(data.length==0){
+						alert("当前的部门没有子部门");
+					}else{
+						 data=eval(data.roleList);
+						for(var i=0; i<data.length;i++){
+							var roleID = data[i].roleID;
+							var roleName = data[i].roleName;
+							//alert(roleID+"-----"+roleName);
+							$("#roleIDSelect").append("<option value='"+roleID+"'>"+roleName+"</option>");
+						}
+					}
+				})
+			}
+		}
+		
+		//人工指派的时候的部门和角色的二级联动
+		function showRole1(){
+			//debugger;
+			$("#win option").remove();
+			//alert($("#roleIDSelect").val());
+			//var deptId = $(this).val();
+			var deptId =$("#assignDeptIDSel option:selected").val();
+			console.log(deptId);
+			//alert("deptId:"+deptId);
+			if(deptId != ""){
+				var url = "../pendingOrder";
+				var args = {"deptId":deptId,type: 'getRole',"time":new Date()};
+				$.getJSON(url,args,function(data){
+					data=eval(data.roleList);
+					if(data==null){
+						$("#win2 option").remove();
+						//alert("当前的部门没有子部门");
+					}else{
+						 //data=eval(data.roleList);
+						for(var i=0; i<data.length;i++){
+							var roleID = data[i].roleID;
+							var roleName = data[i].roleName;
+							//alert(roleID+"-----"+roleName);
+							$("#win").append("<option value='"+roleID+"'>"+roleName+"</option>");
+						}
+					}
+				})
+				query($('#win').val());
+			}
+			
+		}
+		
+		
+		//改变人工指派服务人员的下拉值
+		function query(value){
+			var deptId =$("#assignDeptIDSel option:selected").val();
+			$.ajax({
+				url :  '../pendingOrder',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'win','roleId':value,"deptId":deptId},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+						var userService = eval(jsonObj.userList);//获取服务人员
+						var info = ""; 
+						for(var i=0;i<userService.length;i++){
+							info +="<option value="+userService[i].stuEmpno+">"+userService[i].empName+"</option>";	
+						}
+						$("#win2").html(info);	
+		        		closeSpin(); 
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+		}
+	    
+		function showWorkList(content){
+			$("#menuDiv").show();     	
+			var htmlTmp = "";
+			var htmlTmp2 = "";
+			var htmlTmp3 = "";
+			var htmlTmp4 = "";
+			
+			htmlTmp += '<span class="list_group" id="appoint_area">被指派待处理工单<i class="icon_drop"></i></span>';
+    		htmlTmp += '<span class="content_size" id="appoint_ul">';
+    		htmlTmp += '<ul class="wait_ul">';
+			htmlTmp2 += '<span class="list_group" id="handle_area">抢单待处理工单<i class="icon_drop"></i></span>';
+    		htmlTmp2 += '<span class="content_size" id="handle_ul">';
+    		htmlTmp2 += '<ul class="wait_ul">';
+			htmlTmp3 += '<span class="list_group" id="auto_area">自动派单待处理工单<i class="icon_drop"></i></span>';
+    		htmlTmp3 += '<span class="content_size" id="auto_ul">';
+    		htmlTmp3 += '<ul class="wait_ul">';
+    		htmlTmp4 += '<span class="list_group" id="auto_area">待结单工单<i class="icon_drop"></i></span>';
+    		htmlTmp4 += '<span class="content_size" id="auto_ul">';
+    		htmlTmp4 += '<ul class="wait_ul">';
+
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			if(content[i].sendWay == 'M' && content[i].TicketStatus !='Step06'){
+    				htmlTmp += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].ticketNo + '\');"><em class="icon_file"></em><span><b>' 
+    				+content[i].buildingName
+    				+'</b><em>'
+    				+ content[i].queTypeName
+    				+'</em><i>'
+    				+content[i].pubDate
+    				+'</i><strong>'
+    				+content[i].remainTime 
+					+'</strong></span></a></li>';
+    			}else if(content[i].sendWay == 'G' && content[i].TicketStatus !='Step06'){
+    				htmlTmp2 += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].ticketNo + '\');"><em class="icon_file"></em><span><b>' 
+    				+content[i].buildingName
+    				+'</b><em>'
+    				+ content[i].queTypeName
+    				+'</em><i>'
+    				+content[i].pubDate
+    				+'</i><strong>'
+    				+content[i].remainTime 
+					+'</strong></span></a></li>';
+    			} else if(content[i].sendWay == 'A' && content[i].TicketStatus !='Step06'){
+    				htmlTmp3 += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].ticketNo + '\');"><em class="icon_file"></em><span><b>' 
+    				+content[i].buildingName
+    				+'</b><em>'
+    				+ content[i].queTypeName
+    				+'</em><i>'
+    				+content[i].pubDate
+    				+'</i><strong>'
+    				+content[i].remainTime 
+					+'</strong></span></a></li>';
+    			} else if(content[i].TicketStatus =='Step06'){
+    				htmlTmp4 += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].ticketNo + '\');"><em class="icon_file"></em><span><b>' 
+    				+content[i].buildingName
+    				+'</b><em>'
+    				+ content[i].queTypeName
+    				+'</em><i>'
+    				+content[i].pubDate
+    				+'</i><strong>'
+    				+content[i].remainTime 
+					+'</strong></span></a></li>';
+    			}
+    		}
+    		
+    		htmlTmp += '</ul></span>';
+    		htmlTmp2 += '</ul></span>';
+    		htmlTmp3 += '</ul></span>';
+    		htmlTmp4 += '</ul></span>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp+htmlTmp2+htmlTmp3+htmlTmp4;
+	    	
+	    	
+	    	closeSpin();
+	    	pull_down();//下拉收缩工单效果
+		}
+	    
+		function getOrderDetail(ticketNo){
+			//alert("getOrderDetail");
+			loadSpin("#wrap"); //转圈
+	    	
+	    	$.ajax({
+				url :  '../pendingOrder',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'detail', ticketNo: ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		            
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		if(jsonObj.type == "detail" && jsonObj.value == "-1"){
+			        		goLogin();
+			        	}else if(jsonObj.type == "detail" && jsonObj.value == "1"){
+		            		showWorkOrder(eval(jsonObj.resultList),jsonObj.content,jsonObj.fileList,eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList),eval(jsonObj.jsonRoleList.roleList),eval(jsonObj.jsonUserServiceList.userServiceList),eval(jsonObj.jsonDeptList.deptList));
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			
+			closeSpin();
+		}
+		
+		//明细
+		function showWorkOrder(resultList,content,fileList,orderTypeFatherList,orderTypeChildList,roleList,userServiceList,deptList){
+			orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量
+			//$("#menuDiv").hide();
+			initMenu();
+			$(".contentDiv").css({"height":"100%"});
+			$("#contentDiv").get(0).innerHTML = "";
+			var htmlTmp = "";
+			htmlTmp += '<form   method="post" id="workOrderAddForm" action="${ctx}/workorderInput/add" enctype="multipart/form-data">';
+			htmlTmp +='<span class="ser_code"><i class="icon-paste"></i> 服务单号 <i>'+ content.ticketNo + '</i></span>';
+			htmlTmp += '<span class="content_size">';
+    		htmlTmp += '<table class="content_table"> ';
+        	htmlTmp += '<tr><td>填单人</td><td>'+content.filler+'</td></tr>';
+			htmlTmp += '<tr><td>学工号</td><td>'+content.stuEmpno+'</td></tr>';
+			htmlTmp += '<tr><td>联络方式</td><td>'+content.tel+'</td></tr>';
+			htmlTmp += '<tr><td>微信号</td><td>'+content.webchat+'</td></tr>';
+			htmlTmp += '<tr><td>服务地点</td><td>'+content.buildingName+content.floor+'楼'+content.room+'室</td></tr>';
+			htmlTmp += '<tr><td>问题类型</td><td>'+content.queTypeName+'</td></tr>';
+			htmlTmp += '<tr><td>问题描述</td><td>'+content.queDesc+'</td></tr>';
+			if(fileList.length>0){
+				for(var i=0;i<fileList.length;i++){
+					htmlTmp += '<tr><td>附件</td><td><img style="width:100px;height:100px;" src="'+fileList[i].nfileName+'"/></td></tr>';
+				}
+			}
+			//htmlTmp += '<tr><td >附件</td><td >'+content.oldFileName+'</td></tr>';
+		/* 	var i=0;
+				for(i; i<fileList.length; i++){
+	   				htmlTmp += '<tr><td>附件</td><td ><img width="200" height="150" alt="" src="'+fileList[i].nfileName+'"></td></tr>';
+	    		}	 */
+			if(resultList.length>0){
+   				htmlTmp += '<tr><td>处理记录</td><td>'+'</td></tr>';
+   				for(var i=0;i<resultList.length;i++){
+   					htmlTmp += '<tr><td>'+'</td><td>'+'<'+eval(i+1)+'>'+'&nbsp;&nbsp;<span>[处理人]</span>'+resultList[i].serviceName+'&nbsp;&nbsp;<span>[状态]</span>'+resultList[i].processStatus+'&nbsp;&nbsp;<span>[说明]</span>'+resultList[i].processDesc+'&nbsp;'+resultList[i].unProcessDesc+'</td></tr>';
+   					htmlTmp += '<tr><td>'+'</td><td>'+ '&nbsp;&nbsp;&nbsp;&nbsp;<small>'+resultList[i].createDate+'</small></td></tr>';
+   				}		
+   			}
+			htmlTmp += '</table>';
+   			htmlTmp += '</span>';
+   			htmlTmp += '<span class="action_btn"><button type="button" onclick="showMapBaidu(\''+content.building+'\')" class="width30">刷新地图</button><div class="clearfix"></div></span>';
+			htmlTmp += '<span class="map" id="showMap"></span>';
+			htmlTmp +='<span class="content_size mt_5">';	
+			htmlTmp +='<table class="content_table alignCenter">';			
+		    htmlTmp += '<tr><td colspan="2" class="need">处理描述/转单原因';
+			htmlTmp += '<textarea name="processDesc" id="processDesc" class="pro_textarea"></textarea></td></tr>';
+			
+			htmlTmp += '<tr><td class="min_wid">实际问题类型</td><td><select id = "queTypeFather" onchange="setChange(this.value)">';
+			for(i = 0;i < orderTypeFatherList.length;i++){
+				if(orderTypeFatherList[i].typeName==content.fatherType){
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'" selected>'+orderTypeFatherList[i].typeName+'</option>';
+				}else{
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'">'+orderTypeFatherList[i].typeName+'</option>';
+				}
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '<select id="procQueType">';
+ 			for(i = 0;i < orderTypeChildList.length;i++){
+ 				if(orderTypeChildList[i].typeName==content.typeName){
+ 					htmlTmp += '<option value= "'+orderTypeChildList[i].uniqueID+'" selected>'+orderTypeChildList[i].typeName+'</option>';	
+ 				}else{
+ 					htmlTmp += '<option value= "'+orderTypeChildList[i].uniqueID+'">'+orderTypeChildList[i].typeName+'</option>';	
+ 				}
+			} 
+ 			htmlTmp += "</select></td></tr>";
+			/* 	for(i = 0;i < content.orderTypes.length;i++){
+				htmlTmp += '<option value= "'+content.orderTypes[i].uniqueID+'">'+content.orderTypes[i].typeName+'</option>';
+			}
+			htmlTmp += '</select></td></tr>'; */	
+			htmlTmp += '<tr><td class="min_wid">状态修改</td><td><select id = "ticketStatus" name="ticketStatus" onchange="showzpBtn(this.value)">';
+			htmlTmp += '<option value= "">请选择--</option>';
+			htmlTmp += '<option value= "Step05">转单</option>';
+			htmlTmp += '<option value= "Step07">人工指派</option>';
+			if(content.firstProcEmpno==stuEmpno){
+			htmlTmp += '<option value= "Step04" selected>结单</option>';
+			}else{
+				htmlTmp += '<option value= "Step04" selected>待结单</option>';
+			}
+			htmlTmp += "</select></td></tr>";
+			//htmlTmp += "</select><span>&nbsp;*</span></td></tr>";
+			htmlTmp +='<tr id="procWayID"><td>工作类型</td><td class=""><select id="procWay">';
+			htmlTmp += '<option  value= "1">电话咨询</option>';	
+			htmlTmp += '<option  value= "2">网络咨询</option>';	
+			htmlTmp += '<option  value= "3">现场支持</option>';	
+			htmlTmp += '<option  value= "4">外勤支持</option>';	
+
+	
+			
+			
+			
+			htmlTmp += '<tr><td class="min_wid" id="roleIDTd" style="display: none;">转单给</td><td id="roleID" style="display: none;"><select id="deptIDSelect" name="deptId" onchange="showRole();">';
+			for(i = 0;i < deptList.length;i++){
+				htmlTmp += '<option value= "'+deptList[i].deptId+'">'+deptList[i].deptName+'</option>';
+			}
+			htmlTmp += "</select>";
+			htmlTmp += '<select id="roleIDSelect" name="roleIDSelect">';
+			for(i = 0;i < roleList.length;i++){
+				htmlTmp += '<option value= "'+roleList[i].roleID+'">'+roleList[i].roleName+'</option>';
+			}
+			htmlTmp += "</select></td></tr>";
+			
+			
+			
+			htmlTmp += '<tr><td class="min_wid" id="roleSel" style="display: none;">指派给</td><td id="roleTDSel" style="display: none;"><select id = "assignDeptIDSel" name = "assignDeptIDSel" onchange="showRole1()">';
+			for(i = 0;i < deptList.length;i++){
+				htmlTmp += '<option value= "'+deptList[i].deptId+'">'+deptList[i].deptName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '<select id="win" name = "assignRoleIDSel" onchange="query(this.value)">';	
+			for(i = 0;i < roleList.length;i++){
+				htmlTmp += '<option value= "'+roleList[i].roleID+'">'+roleList[i].roleName+'</option>';
+			}
+			htmlTmp += "</select>";
+			htmlTmp += '<select id="win2">';	
+			for(i = 0;i < userServiceList.length;i++){
+				htmlTmp += '<option value= "'+userServiceList[i].stuEmpno+'">'+userServiceList[i].empName+'</option>';
+			}
+			htmlTmp += "</select></td></tr>";
+			
+			htmlTmp += '<tr><td >附件上传</td><td  colspan="1"><div class="file"><input type="file" accept="image/*" name="file" capture="camera" id="pic" /></div><div id="imgs"></div>';
+			//htmlTmp += '&nbsp;&nbsp;<input type="file" name="fileNames" ></td></tr>';
+			htmlTmp += '</td></tr>';
+   			
+   		/* 	var shtmlTmp = "";
+   			shtmlTmp += '<button type="button" class="button blue" onclick="send(\''+content.ticketNo+'\','+content.procTimes+')">提交</button>';
+   			alert("shtmlTmp--" + shtmlTmp); */   						
+   			htmlTmp += '</table>';
+   			htmlTmp += '</span>';
+   			htmlTmp +='<span class="action_btn">';
+   			htmlTmp += '<button id="sendID" class="marginR08r width50" type="button" onclick="send(\''+content.ticketNo+'\','+content.procTimes+')">提交</button>';
+   			htmlTmp += '<button id="reOrderID" style="display: none;" class="marginR08r width50" type="button" onclick="reOrder(\''+content.ticketNo+'\',\''+content.procTimes+'\',\''+content.stuEmpno+'\')">转单/指派</button>';
+   			htmlTmp += '<button  class="width50" type="button" onclick="back()">返回</button>';   
+   			htmlTmp += '<div class="clearfix"></div>';   
+   			htmlTmp +='</span>';
+   			htmlTmp += '</form>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+    		//htmlTmp拼完之后在调用地图，否则找不到id="showMap"
+    		showMapBaidu(content.building);
+	    	
+	    	closeSpin();
+		}
+		
+		//var imgsrc=[];	//定义一个空数组，用来存放img的src
+		setTimeout(function(){
+			//拍照上传功能
+			var inputs = document.getElementById("pic");
+			var imageType = /image.*/;
+			var imgs=document.getElementById("imgs");
+			
+			var getOnloadFunc = function(aImg) {
+					return function(evt) {
+						aImg.src = evt.target.result;
+						//alert(aImg.src);
+                    }
+				};
+					
+			    
+			if(inputs){
+				inputs.addEventListener("change", function(evt) {					
+				    for (var i = 0, numFiles = this.files.length; i < numFiles; i++) {
+				        var file = this.files[i];
+				        if (!file.type.match(imageType)) {
+				            continue;
+				        }
+					    var img = document.createElement("img");
+					    
+
+					    var reader = new FileReader();					   					    
+					    reader.onload = getOnloadFunc(img);					
+					    img.className="IMG";
+					   // imgs.appendChild(img);
+					    	                    
+					    var canvas = document.createElement("canvas");
+					   canvas.style.width="100px";
+					   canvas.style.height="130px";
+					    imgs.appendChild(canvas);
+					    var ctx = canvas.getContext('2d');
+					    img.onload = function() {
+                        var w = img.naturalWidth,
+                        h = img.naturalHeight;
+                        canvas.width = w;
+                        canvas.height = h;
+                        ctx.drawImage(img, 0, 0, w, h, 0, 0, w/1.1, h/1.1);	 
+                        $("canvas").on("click",function(){
+                        	if($(this).attr("class")=="big") {
+                        	 $(this).removeClass("big");
+                			  canvas.style.width="100px";
+   					          canvas.style.height="130px";
+   					          drawImage();
+                        	}else{
+                			    $(this).addClass("big");
+                   			    canvas.style.width="65%";
+					            canvas.style.height="50%";
+					            drawImage();
+                        	    }
+                		      })
+                        fileUpload();
+                        function fileUpload() {
+       				     var data = canvas.toDataURL("image/jpeg", 0.5);
+       				     //dataURL 的格式为 “data:image/png;base64,****”,逗号之前都是一些说明性的文字，我们只需要逗号之后的就行了
+       				    data = data.split(',')[1];
+       				    data = window.atob(data);
+       				    var ia = new Uint8Array(data.length);
+       				    for (var i = 0; i < data.length; i++) {
+       				          ia[i] = data.charCodeAt(i);
+       				    };
+       				     //canvas.toDataURL 返回的默认格式就是 image/png
+       				    var blob = new Blob([ia], {
+       				     type: "image/jpeg"
+       				    });
+       				    var formData = new FormData($("#workOrderAddForm")[0]);  
+    					formData.append("myFile",blob);
+    					formData.append("imgdata",imgdata);
+    					formData.append("fileSize",fileSize);
+    					formData.append("fileName",fileName);
+    					var ticketNo = $("#ticketNo").get(0).innerHTML;
+    					formData.append("ticketNo",ticketNo);
+    					loadSpin("#wrap"); //转圈   			    	
+    			    	$.ajax({
+    						url :  '../WebUpload',  
+    						type: 'POST',  
+    			          	data: formData,
+    			          	async: false,  
+    			            cache: false,  
+    			          	contentType: false,  
+    			          	processData: false, 
+    			          	dataType: "json",
+    				    	error : function() {
+    				    		closeSpin();
+    				            //alert(errorMsg);
+    				            
+    				            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+    		            				function(e){
+    		            				  //callback 处理按钮事件		  
+    		            				  var button = $(e.target).attr('class');
+    		            				  if(button == 'ok'){
+    		            					//按下确定按钮执行的操作
+    		            					//todo ....
+    		            					this.hide();
+    		            				  }	
+    		            				}
+    		            			);
+    				            
+    				        },  
+    				        success : function(jsonObj) {  
+    				        	 if(jsonObj != null){
+    				            	
+    				            	popTipShow.alert('提示 ',jsonObj.message, ['知道了'],
+    			            				function(e){
+    			            				  //callback 处理按钮事件		  
+    			            				  var button = $(e.target).attr('class');
+    			            				  if(button == 'ok'){
+    			            					//按下确定按钮执行的操作
+    			            					//todo ....
+    			            					this.hide();
+    			            				  }	
+    			            				}
+    			            			);
+    				            	
+    				            	$("#tempTicketNo").val(jsonObj.ticketNo);
+    				            }else{
+    				            	closeSpin();
+    				            }
+    				        }  
+    					});
+    					
+    						
+                        };
+					    }
+					    closeSpin();
+					    reader.readAsDataURL(file);
+				    }
+				},false);
+			}	
+		},2000)
+		
+		//返回
+		function back(){
+			loadSpin("#wrap"); //转圈
+			window.location.href = "pendingOrder.html?param=back";
+			htmlTmp = "";
+			closeSpin();
+		}
+		
+		function showzpBtn(value){
+			showRole1();
+			if(value=="Step07"){ //人工指派
+				$("#roleSel").css("display","");
+				$("#roleTDSel").css("display","");
+				$("#reOrderID").css("display","");
+				$("#roleIDTd").css("display","none");
+				$("#roleID").css("display","none");
+				$("#sendID").css("display","none");
+				$("#procWayID").css("display","none");
+			}else if(value=="Step05"){ //转单
+				$("#roleSel").css("display","none");
+				$("#roleTDSel").css("display","none");
+				$("#sendID").css("display","none");
+				$("#procWayID").css("display","none");
+				$("#roleIDTd").css("display","");
+				$("#roleID").css("display","");
+				$("#reOrderID").css("display","");
+			}else if(value=="Step04"){ //结单
+				$("#roleSel").css("display","none");
+				$("#roleTDSel").css("display","none");
+				$("#roleIDTd").css("display","none");
+				$("#roleID").css("display","none");
+				$("#reOrderID").css("display","none");
+				$("#procWayID").css("display","");
+				$("#sendID").css("display","");
+			}
+	
+		}
+		
+ 		//送出
+ 		function send(ticketNo,procTimes){
+			loadSpin("#wrap"); //转圈
+			var processDesc = $("#processDesc").val();
+			var procQueType = $("#procQueType").val();
+			var procWay = $("#procWay").val();
+			var reg = /^[A-Za-z0-9\u4e00-\u9fa5]{1,100}$/;
+			if(!isEmptyStr(processDesc) && reg.test($.trim(processDesc))){
+		 		//var fileNames = $("#fileNames").val();
+	    		$.ajax({
+					url :  '../pendingOrder',  
+		    		type : 'POST',  
+		    		dataType : 'json',
+		    		async: false,  
+		          	cache: false, 
+		    		data: {type: 'Send',ticketNo: ticketNo,procWay:procWay,processDesc:processDesc,procQueType:procQueType,procTimes:procTimes},
+		    		error : function() {
+		    			closeSpin();
+		       	     //alert(errorMsg);
+		       	  popTipShow.alert('提示 ',errorMsg, ['知道了'],
+          				function(e){
+          				  //callback 处理按钮事件		  
+          				  var button = $(e.target).attr('class');
+          				  if(button == 'ok'){
+          					//按下确定按钮执行的操作
+          					//todo ....
+          					this.hide();
+          				  }	
+          				
+          				}
+          			);
+		       	     
+		      	  },  
+		       	 success : function(jsonObj) {  
+		        		 if(jsonObj != null){
+		        			 if(jsonObj.type == "Send" && jsonObj.value == "-1"){
+					        		goLogin();
+		        			 }else if(jsonObj.type == "Send" && jsonObj.value == "2"){
+		        					popTipShow.alert('提示 ',jsonObj.error, ['知道了'],
+			                				function(e){
+			                				  //callback 处理按钮事件		  
+			                				  var button = $(e.target).attr('class');
+			                				  if(button == 'ok'){
+			                					//按下确定按钮执行的操作
+			                					//todo ....
+			                					this.hide();
+			                				  }	
+			                				  if(jsonObj.systemValidateType == "tiup"){	
+			                				  	synInfo(jsonObj.ticketNo);
+			                				  }else{
+			                					 back(); 
+			                				  }
+			                				}
+			                			);
+		        			 }
+		        			 else if(jsonObj.type == "Send" && jsonObj.value == "1"){
+		            			//alert("送出成功！");
+		            			sendEndMessage(jsonObj.ticketNo,jsonObj.msgType);
+		            			popTipShow.alert('提示 ',"送出成功！", ['知道了'],
+		                				function(e){
+		                				  //callback 处理按钮事件		  
+		                				  var button = $(e.target).attr('class');
+		                				  if(button == 'ok'){
+		                					//按下确定按钮执行的操作
+		                					//todo ....
+		                					this.hide();
+		                				  }	
+		                				  if(jsonObj.systemValidateType == "tiup"){	
+		                				  	synInfo(jsonObj.ticketNo);
+		                				  }else{
+		                					 back(); 
+		                				  }
+		                				}
+		                			);
+		            			
+		            			
+		            			//back();
+		            		}else{
+		            			
+								closeSpin();  //关闭转圈
+							}	
+		          	  }else{
+		           	 	closeSpin();
+		         	   }
+		       	 }  
+				}); 
+	    		
+ 		}
+	    	else{
+	    		if(isEmptyStr(processDesc)){
+			 		popTipShow.alert('提示','处理描述未填写！请填写。', ['知道了'],
+	        				function(e){
+	        				  //callback 处理按钮事件		  
+	        				  var button = $(e.target).attr('class');
+	        				  if(button == 'ok'){
+	        					//按下确定按钮执行的操作
+	        					//todo ....
+	        					this.hide();
+	        				  }	
+	        					$("#processDesc").focus();
+	        				  closeSpin();  //关闭转圈
+	        				}
+	        			);
+					return false;
+			 	}	else if(!reg.test($.trim(processDesc))){	
+					popTipShow.alert('提示 ','处理描述输入内容只允许数字、字母、汉字且不超过100位！。 ', ['知道了'],
+	        				function(e){
+	        				  //callback 处理按钮事件		  
+	        				  var button = $(e.target).attr('class');
+	        				  if(button == 'ok'){
+	        					//按下确定按钮执行的操作
+	        					//todo ....
+	        					this.hide();
+	        				  }	
+	        				  $("#processDesc").focus();
+	        				  closeSpin();  //关闭转圈
+	        				}
+	        			);
+			 	 }
+				}
+			
+		}  
+ 		
+ 		// Check string not empty
+		function isEmptyStr(s)
+		{
+		    return ((s==null) || ($.trim(s).length == 0));
+		}
+ 		
+ 		//发送工单结束通知
+		function sendEndMessage(ticketNo,msgType){
+			loadSpin("#wrap"); //转圈
+	     	$.ajax({
+				url :  '../SendMessage',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type:msgType,ticketNo:ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	closeSpin();
+		        }
+		 })
+		}
+		
+		//转单/人工指派
+		function reOrder(ticketNo,procTimes,stuEmpno){
+			loadSpin("#wrap"); //转圈
+			var processDesc = $("#processDesc").val();
+			var procQueType = $("#procQueType").val();
+			//获取修改状态的值
+			var ticketStatus = $("#ticketStatus option:selected").val();
+			var deptId;
+			var deptName;
+			var roleId;
+			var stuEmpno;
+			var procEmpName;
+			var procStuEmpno;
+			if(ticketStatus=="Step05"){
+				deptId = $("#deptIDSelect  option:selected").val();
+				deptName = $("#deptIDSelect  option:selected").text();
+				roleId = $("#roleIDSelect  option:selected").val();
+				if(deptId == undefined|| deptId==""){
+					popTipShow.alert('提示 ', '请选择要抢单的部门',['知道了'],
+           				function(e){
+           				  //callback 处理按钮事件		  
+           				  var button = $(e.target).attr('class');
+           				  if(button == 'ok'){
+           					//按下确定按钮执行的操作
+           					//todo ....
+           					this.hide();
+           				  }	
+           				}
+            		);
+					return;
+				}
+				if (roleId== undefined || roleId=="") {
+					popTipShow.alert('提示 ', '请选择要抢单的角色',['知道了'],
+           				function(e){
+           				  //callback 处理按钮事件		  
+           				  var button = $(e.target).attr('class');
+           				  if(button == 'ok'){
+           					//按下确定按钮执行的操作
+           					//todo ....
+           					this.hide();
+           				  }	
+           				}
+            		);
+					return;
+				}
+			}else if(ticketStatus=="Step07"){
+				deptId = $("#assignDeptIDSel  option:selected").val();
+				deptName = $("#assignDeptIDSel  option:selected").text();
+				roleId = $("#win  option:selected").val();
+				procStuEmpno = $("#win2 option:selected").val(); //获取服务人员学工号
+				procEmpName = $("#win2 option:selected").text(); //获取服务人员姓名
+				if(deptId == undefined || deptId ==""){
+					popTipShow.alert('提示 ', '请选择要指派的部门',['知道了'],
+           				function(e){
+           				  //callback 处理按钮事件		  
+           				  var button = $(e.target).attr('class');
+           				  if(button == 'ok'){
+           					//按下确定按钮执行的操作
+           					//todo ....
+           					this.hide();
+           				  }	
+           				}
+            		);
+					return;
+				}else if (roleId== undefined || roleId=="") {
+					popTipShow.alert('提示 ', '请选择要指派的角色',['知道了'],
+           				function(e){
+           				  //callback 处理按钮事件		  
+           				  var button = $(e.target).attr('class');
+           				  if(button == 'ok'){
+           					//按下确定按钮执行的操作
+           					//todo ....
+           					this.hide();
+           				  }	
+           				}
+            		);
+					return;
+				}else if (procStuEmpno== undefined || procStuEmpno=="") {
+					popTipShow.alert('提示 ', '请选择要指派的服务人员',['知道了'],
+           				function(e){
+           				  //callback 处理按钮事件		  
+           				  var button = $(e.target).attr('class');
+           				  if(button == 'ok'){
+           					//按下确定按钮执行的操作
+           					//todo ....
+           					this.hide();
+           				  }	
+           				}
+            		);
+					return;
+				}
+			}
+			
+			var ticketStatus = $("#ticketStatus").val(); //获取用户选择的是转单还是人工指派
+			var reg = /^[A-Za-z0-9\u4e00-\u9fa5]{1,100}$/;
+			if(!isEmptyStr(processDesc) && reg.test($.trim(processDesc))){
+		    	$.ajax({
+					url :  '../pendingOrder',  
+			    	type : 'POST',  
+			    	dataType : 'json',
+			    	async: false,  
+		          	cache: false, 
+			    	data: {type: 'ReOrder',deptName:deptName,ticketStatus:ticketStatus,procStuEmpno:procStuEmpno,procQueType:procQueType,procEmpName:procEmpName,stuEmpno:stuEmpno,ticketNo: ticketNo,processDesc:processDesc,procTimes:procTimes,roleId:roleId,deptId:deptId},
+			    	error : function() {
+			    		closeSpin();
+			            //alert(errorMsg);
+			            
+			            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+	            				function(e){
+	            				  //callback 处理按钮事件		  
+	            				  var button = $(e.target).attr('class');
+	            				  if(button == 'ok'){
+	            					//按下确定按钮执行的操作
+	            					//todo ....
+	            					this.hide();
+	            				  }	
+	            				
+	            				}
+	            			);
+			            
+			            
+			        },  
+			        success : function(jsonObj) {  
+			        	 if(jsonObj != null){
+			        		 if(jsonObj.type == "ReOrder" && jsonObj.value == "-1"){
+					        		goLogin();
+		        			 }else
+			            	if(jsonObj.type == "ReOrder" && jsonObj.value == "1"){
+			            		//alert("无法接单！");
+			            		sendMessage(ticketNo,ticketStatus);
+			            		popTipShow.alert('提示 ','转单/人工指派已提交  ', ['知道了'],
+			            				function(e){
+			            				  //callback 处理按钮事件		  
+			            				  var button = $(e.target).attr('class');
+			            				  if(button == 'ok'){
+			            					//按下确定按钮执行的操作
+			            					//todo ....
+			            					this.hide();
+			            				  }	
+			            				  back();
+			            				}
+			            			);
+			            		
+			            		
+			            		
+			            	}else{
+								closeSpin();  //关闭转圈
+							}	
+			            }else{
+			            	closeSpin();
+			            }
+			        }  
+				});
+			}else{
+				
+				if(isEmptyStr(processDesc)){
+			 		popTipShow.alert('提示','转单原因未填写！请填写。', ['知道了'],
+	        				function(e){
+	        				  //callback 处理按钮事件		  
+	        				  var button = $(e.target).attr('class');
+	        				  if(button == 'ok'){
+	        					//按下确定按钮执行的操作
+	        					//todo ....
+	        					this.hide();
+	        				  }	
+	        					$("#processDesc").focus();
+	        				  closeSpin();  //关闭转圈
+	        				}
+	        			);
+			 	}	else if(!reg.test($.trim(processDesc))){	
+					popTipShow.alert('提示 ','转单原因输入内容只允许数字、字母、汉字且不超过100位！。 ', ['知道了'],
+	        				function(e){
+	        				  //callback 处理按钮事件		  
+	        				  var button = $(e.target).attr('class');
+	        				  if(button == 'ok'){
+	        					//按下确定按钮执行的操作
+	        					//todo ....
+	        					this.hide();
+	        				  }	
+	        					$("#processDesc").focus();
+	        					 closeSpin();  //关闭转圈
+	        				}
+	        			);
+			 	 }
+				
+			}
+		}
+		
+		//发送通知
+		function sendMessage(ticketNo,ticketStatus){
+			loadSpin("#wrap"); //转圈
+		/* 	var ticketNo = $("#ticketNo").get(0).innerHTML;
+			var tel = $("#tel").val();	
+			var webchat = $("#webchat").val();		
+			var room = $("#room").val();
+			var queTypeName = $("#queTypeName").val();
+			var queTypeNameTxt=$("#queTypeName option:selected").text(); */
+			//alert(imgsrc);
+	     	$.ajax({
+				url :  '../SendMessage',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type:'57',ticketNo:ticketNo,ticketStatus:ticketStatus},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if (jsonObj.value == "-1"){
+							goLogin();
+						}else{
+							closeSpin();
+						}
+		        	closeSpin();
+		        }
+		 })
+		}
+		
+		//送出
+ 		function synInfo(ticketNo){
+			//alert("synInfo");
+			loadSpin("#wrap"); //转圈
+	     	$.ajax({
+				url :  '../pendingOrder',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'SynInfo',ticketNo:ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		 if(jsonObj.type == "SynInfo" && jsonObj.value == "-1"){
+				        		goLogin();
+	        			 }else 
+		            	if(jsonObj.type == "SynInfo" && jsonObj.value == "1"){
+		            		//alert("同步结果:"+jsonObj.msg);
+		            		back();
+		            	}else if((jsonObj.type == "SynInfo" && jsonObj.value == "0")){
+		            		//alert("同步结果:"+jsonObj.msg);
+							closeSpin();  //关闭转圈
+							back();
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			}); 
+			closeSpin();
+		}  
+		
+		window.onload = function (){
+			//session=${session.chat_session_info};
+			//session=<%=session.getAttribute("chat_session_info") %>;
+			connect();  //页面初始化方法
+			
+		};
+		
+		function changeMenuClass(index){
+			
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+
+			$("#subMenuImg1").attr('src','../style/images/menu1.png');
+			$("#subMenuImg2").attr('src','../style/images/menu2.png'); 
+			$("#subMenuImg3").attr('src','../style/images/menu3.png'); 
+			$("#subMenuImg4").attr('src','../style/images/menu4.png'); 
+			$("#subMenuImg"+index).attr('src','../style/images/menu' + index + '_on.png'); 
+			
+			
+			var htmlTmp = "";
+			
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "grabTkt.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "waitingList.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "pendingOrder.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=S";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 7){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "admin.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function changeMenuMore(index){
+			if(index == 4){
+				ini_menu();  //调用popmenu.js新写的方法中
+			}
+		}
+		
+		function initMenu(){
+			$("#subMenuDiv_div").hide();
+		}
+		function initMenuAdmin(flag){ 
+			//alert(flag);
+			if(flag == "Y"){
+				$("#admin_div").show();
+			}else{
+				$("#admin_div").hide();
+			}
+		}
+	</script>
+	
+	</head>
+	
+<body class="sub_bg_grab" >
+	    	<div id="contentDiv" class="main_area form-control">
+		    	
+	    	</div>
+	    	
+	    	
+	     <!--底部区域start-->
+		<div id="menuDiv" class="footer_area">
+		    <ul class="footer_ul">
+		      <li><a href="#" onclick="changeMenuClass(1)"><i class="icon_qd"></i><b>抢单</b></a></li>
+              <li><a href="#" onclick="changeMenuClass(2)"><i class="icon_djd"></i><b>待接单</b></a></li>
+              <li class="current"><a href="#" onclick="changeMenuClass(3)"><i class="icon_dcl"></i><b>待处理</b></a></li>
+		      <li id="pop_more"><a href="#" onclick="changeMenuMore(4)"><i class="icon_more"></i><b>更多</b></li>
+		    </ul>	    	
+			<span class="bg_span"></span>
+		</div>
+	<!--底部区域end-->
+		
+	<!--弹出区域start-->
+		<div class="pop_area" id="pop_more_content" style="display:none;">
+	    <ul class="pop_ul">
+	      <li class="solid"><a href="#" onclick="changeMenuClass(5)"><i class="icon_history"></i><b>历史</b></a></li>
+	      <li class="solid"><a href="#" onclick="changeMenuClass(6)"><i class="icon_role"></i><b>切换角色</b></a></li>
+	      <!-- <li id="admin_div" hidden="true"><a href="#" onclick="changeMenuClass(7)"><i class="icon_role"></i><b>切换角色</b></a></li> -->
+	    </ul>
+		</div>
+	<!--弹出区域end-->
+	    
+</body>
+
+</html>

@@ -1,0 +1,179 @@
+/*公共样式表*/
+
+/*通用、字体图标等*/
+* {
+	margin: 0;
+	padding: 0;
+}
+
+html, body {
+	width: 100%;
+	height: 100%;
+	overflow-x: hidden;
+}
+
+body {
+	font-family: PingFangSC-Regular, Verdana, Arial, sans-serif, "微软雅黑";
+	font-size: 12px/22px;
+	color: #000;
+	background: #FFF;
+	overflow-x: hidden;
+}
+
+ul {
+	list-style: none;
+}
+
+@font-face {
+	font-family: 'PingFangSC-Regular';
+	src: url('../font/PingFang Regular.ttf');
+}
+
+@font-face {
+	font-family: 'PingFangSC-Medium';
+	src: url('../font/PingFang Medium.ttf'),
+}
+
+@font-face {
+	font-family: 'iconfont'; /* project id 625890 */
+	src: url('//at.alicdn.com/t/font_625890_ux2ktledmhfcrf6r.eot');
+	src: url('//at.alicdn.com/t/font_625890_ux2ktledmhfcrf6r.eot?#iefix')
+		format('embedded-opentype'),
+		url('//at.alicdn.com/t/font_625890_ux2ktledmhfcrf6r.woff')
+		format('woff'),
+		url('//at.alicdn.com/t/font_625890_ux2ktledmhfcrf6r.ttf')
+		format('truetype'),
+		url('//at.alicdn.com/t/font_625890_ux2ktledmhfcrf6r.svg#iconfont')
+		format('svg');
+}
+
+.iconfont {
+	font-family: "iconfont" !important;
+	font-size: 16px;
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-webkit-text-stroke-width: 0.2px;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+/*滚动条*/
+/*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+ ::-webkit-scrollbar {
+	width: 0;
+	height: 0;
+	background-color: #fff;
+} 
+
+/*定义滚动条轨道 内阴影+圆角*/
+::-webkit-scrollbar-track {
+	-webkit-box-shadow: inset 0 0 6px #EAEAEA;
+	border-radius: 100px;
+	background-color: #F5F5F5;
+}
+
+/*定义滑块 内阴影+圆角*/
+::-webkit-scrollbar-thumb {
+	border-radius: 100px;
+	-webkit-box-shadow: inset 0 0 6px #EAEAEA;
+	background-color: #555;
+}
+/*loading效果*/
+#loading {
+	position: fixed;
+	top: -50%;
+	left: -50%;
+	width: 200%;
+	height: 200%;
+	background: #fff;
+	z-index: 100;
+	overflow: hidden;
+}
+
+.loading-img {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+}
+/*Grid*/
+.datagrid-cell{
+	word-wrap:break-word; 
+	text-overflow:ellipsis; 
+	white-space:nowrap; 
+	overflow:hidden;
+}
+
+.datagrid-cell, .datagrid-cell-group, .datagrid-header-rownumber,
+	.datagrid-cell-rownumber {
+	font-size: 14px;
+	height: 22px !important;
+	line-height: 22px;
+	padding: 10px;
+}
+
+.datagrid table {
+	border-collapse: collapse;
+	
+}
+/* .datagrid-view{
+	max-height:400px;
+	overflow-y:auto;
+} */
+.datagrid-view td {
+	border: none; 	
+}
+.datagrid-header {
+	border: none;
+}
+
+.datagrid-view td {
+	border: 1px solid #E9E9E9;
+	font-family: PingFangSC-Regular;
+	color: rgba(0, 0, 0, 0.65);
+	text-align: center;
+	background: none;
+}
+
+.datagrid-view tr {
+	background: none;
+}
+
+.datagrid-header .datagrid-cell span {
+	font-family: PingFangSC-Medium;
+	font-size: 14px !important;
+	color: rgba(0, 0, 0, 0.65);
+	line-height: 22px;
+}
+
+.datagrid-header td {
+	border-bottom: none;
+}
+
+.datagrid-view1 td {
+	border-right: none;
+}
+
+.datagrid-header td {
+	background: #FAFAFA;
+}
+
+.datagrid .datagrid-pager {
+	border: none;
+	position: fixed;
+    bottom: 0px;
+    width:100% 
+}
+
+.pagination-page-list {
+	width: 60px !important;
+	height: 28px !important;
+	border: 1px solid #DCDFE6 !important;
+	border-radius: 3px !important;
+	font-family: PingFangSC-Regular;
+	font-size: 14px;
+	color: #606266;
+	letter-spacing: 0;
+	line-height: 14px;
+}

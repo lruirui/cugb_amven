@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>工单申报</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+	<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" />
+	
+	<link rel="stylesheet" href="../style/css/main.css" />
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script>
+	
+	<link rel="stylesheet" href="../style/css/common.css" /> 
+	<script src="../js/alertPopShow.js" ></script>
+	<script type="text/Javascript" src="https://3gimg.QQ.com/lightmap/components/geolocation/geolocation.min.js"></script><!-- 腾讯获取坐标需要引入的 -->
+    <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+    <script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+	<script src="../js/giveLngAndLat.js" ></script>    
+	<style type="text/css">
+		.trackTD{
+			 nowrap;
+			 text-align:left;
+			 vertical-align:middle;
+			 width:30%;
+			 padding:5px 0px 5px 10px; 
+			 
+		}
+		
+		.trackTDVal{
+			 text-align:left;
+			 vertical-align:middle;
+			 padding:5px 10px 5px 10px;
+			 font-Weight:bold;
+			 color:black; 
+		}
+		.trackBtn{
+			 nowrap;
+			 vertical-align:middle;
+			 padding:10px 0px 5px 5px;
+			 text-align:right;
+			 padding-right:20px;
+		}
+		input {
+ 			border: 1px solid #2468a2;
+		}
+		.file {
+		    position: relative;
+		    display: inline-block;
+		    overflow: hidden;
+		    color: #1E88C7;
+		    text-decoration: none;
+		    text-indent: 0;
+		    width: 40px;
+		    height: 30px;
+		    background: url(../style/images/icon_camera.png) no-repeat;
+		    background-size:100% 100%;
+		}
+		.file input {
+			width:40px;
+			height:30px;
+		    position: absolute;
+		    left: 0;
+		    top: 0;
+		    opacity: 0;
+		    border:none;
+		}
+		.IMG{
+			width:100px;
+			height:150px;
+			display:inline-block;
+		}
+		.big{
+			position:fixed;
+			left:50%;
+			right:50%;
+			top:50%;
+			bottom:50%;
+			width:100%;
+			height:100%;
+		}
+		
+	</style>
+	<script type="text/javascript">
+	
+	   	var errorMsg = "服务器错误!";
+	   	var maxFileSizeMsg = "图片太大，请上传10M以内的照片!";
+	 
+	   	var allInfoToLou = null;
+	   	var areaInfoToBack = null;
+	   	
+		var orderTypeChildTwoList=null;
+
+		//改变问题类型的值
+		function setChange(parentValue){
+			var info = "";
+			for(var i=0;i<orderTypeChildTwoList.length;i++){ 
+				if(parentValue==orderTypeChildTwoList[i].pid){
+					info +="<option value="+orderTypeChildTwoList[i].uniqueID+">"+orderTypeChildTwoList[i].typeName+"</option>";
+				}
+				
+			}
+			
+			$("#queTypeName").html(info);
+		}
+		
+		//改变区域的值
+		function changeToArea(areaValue){
+/* 	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'toAreaInfoByInfo','pid':areaValue},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+						$("#location").html("");
+						var n = eval(jsonObj.list);//获取信息内容
+						var info = ""; 
+						for(var i=0;i<n.length;i++){
+							info +="<option value="+n[i].dictID+">"+n[i].dictName+"</option>";	
+						}
+						$("#location").html(info);	
+		        		closeSpin(); 
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			}); */
+			var areaValue = $("#areaServer").val();
+			var infoToLouOne = null;
+			var info = "";
+			for(var i=0;i<allInfoToLou.length;i++){ 
+				if(areaValue==allInfoToLou[i].pid){
+					info +="<option value="+allInfoToLou[i].dictID+">"+allInfoToLou[i].dictName+"</option>";
+				}
+				
+			}
+			
+			$("#location").html(info);
+/* 			$.ajax({
+				url:"../WebRequest",
+				type:"post",
+				data:{'type':'toAreaInfoByInfo','pid':areaServer},
+				dataType:"json",
+				success:function(sendObj){
+					$("#location").html("");
+					var n = eval(sendObj.list);//获取信息内容
+					var info = ""; 
+					for(var i=0;i<n.length;i++){
+						info +="<option value="+n[i].dictID+">"+n[i].dictName+"</option>";	
+					}
+					$("#location").html(info);
+				}
+			}); */
+		}
+	   	
+	    //连接
+	    function connect() {
+	    	/* loadSpin("#wrap"); //转圈
+	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'OrderApply'},
+		    	error : function() {
+		    		closeSpin();
+		            alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	if(jsonObj != null){
+		            	if(jsonObj.type == "OrderApply" && jsonObj.value == "1"){
+		            		showWorkList(jsonObj.content);
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			}); */
+			loadSpin("#wrap"); //转圈
+	    	
+	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'OrderApplyDetail'},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		initMenu(jsonObj.roleflag);
+		        		if (jsonObj.type == "OrderApplyDetail" && jsonObj.value == "-1"){
+							goLogin();
+						}else
+		            	if(jsonObj.type == "OrderApplyDetail" && jsonObj.value == "1"){
+		            		showWorkOrder(jsonObj.content,eval(jsonObj.jstoArea.buildingListToArea),eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			closeSpin();
+	    }
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }
+		function showWorkList(content){
+	    	
+			var htmlTmp = "";
+	    	
+    		htmlTmp += '<table class="table_data">';
+    		
+    		htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;"><td colspan="3" class="table_head">待处理的服务申请</td></tr>';
+
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			htmlTmp += '<tr onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><td nowrap style="text-align:left;vertical-align:middle;width:14%;padding:5px 10px 5px 10px;"><img src="../style/images/icon_order.png"></td><td>服务单号 <span>' 
+    				+ content[i].serviceNo 
+    				+ '</span></td><td nowrap style="text-align:right;vertical-align:right;width:8%;padding:0px 10px 0px 5px;"><img src="../style/images/icon_next.png"></td></tr>';
+    		}
+    		
+    		htmlTmp += '</table>';
+    		
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	
+	    	
+	    	closeSpin();
+		}
+		
+		function getOrderDetail(ticketNo){
+			loadSpin("#wrap"); //转圈
+	    	
+	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'OrderApplyDetail', ticketNo: ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		            	if(jsonObj.type == "OrderApplyDetail" && jsonObj.value == "1"){
+		            		showWorkOrder(jsonObj.content,eval(jsonObj.jstoArea.buildingListToArea),eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			
+			closeSpin();
+		}
+		
+		//明细
+		function showWorkOrder(content,jstoArea,orderTypeFatherList,orderTypeChildList){
+			allInfoToLou = content.locations;//赋值给全局变量
+			orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量
+			$("#contentDiv").get(0).innerHTML = "";
+			var htmlTmp = "";
+			htmlTmp += '<form   method="post" id="workOrderAddForm" action="${ctx}/workorderInput/add" enctype="multipart/form-data">';
+    		htmlTmp += '<table class="table_data">';
+    		htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;color:#00BFFF;"><td colspan="2" class="table_head">故障申报服务工单申请</td></tr>';
+    		htmlTmp += '<tr><td colspan="2" class="tickno_head"><img style="vertical-align:middle; max-width:100%; width: 30px; padding-left: 10px;  padding-right: 15px;'
+        	htmlTmp += 'padding-top: 8px; padding-bottom: 8px;  margin-left: 0px;" src="../style/images/icon_order.png">服务单号 <span id="ticketNo">'+ content.ticketNo + '</span></td></tr>';
+        	htmlTmp += '<tr><td class="trackTD">填单人</td><td class="trackTDVal"><input type="text" name="filler" id="filler" value="'+content.filler+'" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/></td></tr>';
+			htmlTmp += '<tr><td class="trackTD">学工号</td><td class="trackTDVal">'+content.stuEmpno+'</td></tr>';
+			htmlTmp += '<tr><td class="trackTD">联络方式</td><td class="trackTDVal"><input type="tel" name="tel" id="tel" value="'+content.tel+'" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/><span style="color: #ff0000;font-size: 15px;">&nbsp;*</span></td></tr>';
+			htmlTmp += '<tr><td class="trackTD">微信号</td><td class="trackTDVal"><input type="text" name="webchat" id="webchat" value="'+content.webchat+'" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/><input type="text" id="tempTicketNo" value="" hidden="true"/></td></tr>';
+			
+			htmlTmp += '<tr><td class="trackTD">服务地点</td><td class="trackTDVal">';
+			htmlTmp += '<select id="areaServer" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" name="area" onchange="changeToArea(this.value)">';
+			for(i = 0;i < jstoArea.length;i++){
+				htmlTmp += '<option class="location_op"  value= "'+jstoArea[i].dictID+'">'+jstoArea[i].dictName+'</option>';
+			}
+			htmlTmp += '</select>&nbsp;&nbsp;';
+			htmlTmp += '<select id = "location" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white">';
+ 			for(i = 0;i < content.locations.length;i++){
+ 				if(content.locations[i].pid=="1"){
+ 					htmlTmp += '<option class="location_op" value= "'+content.locations[i].dictID+'">'+content.locations[i].dictName+'</option>';	
+ 				}
+			} 
+			htmlTmp += '</select><select id = "floors" style="border:1px solid gray;border-radius:3px;height:30px;margin-top:3px;box-sizing:border-box;background:white">';
+			var floors = content.topFloor*1;
+			for(i = 1;i <= floors;i++){
+				htmlTmp += '<option value= "'+i+'">'+i+'楼</option>';
+			} 
+			htmlTmp += '</select>';
+			htmlTmp += '</td></tr>';
+			htmlTmp += '<tr><td class="trackTD">详细地址</td><td class="trackTDVal"><input type="text" name="room" id="room" maxlength="100" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/></td></tr>';
+			htmlTmp += '<tr><td class="trackTD">问题类型</td><td class="trackTDVal"><select style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" id = "queTypeFather" onchange="setChange(this.value)">';
+			for(i = 0;i < orderTypeFatherList.length;i++){
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'">'+orderTypeFatherList[i].typeName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '<select id="queTypeName" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;margin-top:3px;box-sizing:border-box;background:white">';
+ 			for(i = 0;i < orderTypeChildList.length;i++){
+ 				if(orderTypeChildList[i].pid=="1"){
+ 					htmlTmp += '<option class="location_op" value= "'+orderTypeChildList[i].uniqueID+'">'+orderTypeChildList[i].typeName+'</option>';	
+ 				}
+			} 
+ 			htmlTmp += "</select></td></tr>";
+			
+			
+			
+			
+			htmlTmp += '<tr><td class="trackTD">问题描述</td><td class="trackTDVal"><input style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" type="text" name="queDesc" id="queDesc"/</td><span style="color: #ff0000;font-size: 15px;">&nbsp;*</span></tr>';
+			htmlTmp += '<tr style="height:auto"><td class="trackTD">附件上传</td><td class="trackTDVal" colspan="1"><div class="file"><input type="file" accept="image/*" name="file" capture="camera" id="pic"/></div><div id="imgs"></div>';
+			//htmlTmp += '<button type="button" class="button blue" onclick="">上传</button></td></tr>';
+			htmlTmp += '<tr><td class="trackTD" ></td><td class="trackBtn" colspan="1">'; 
+   			htmlTmp += '<button type="button" class="button blue" id="btn" onclick="send()">提交</button>';
+   		 	//var shtmlTmp ="";
+   			//shtmlTmp += '<button type="button" class="button blue" onclick="send('+content.ticketNo +')">提交</button>';
+   			//alert("shtmlTmp---" +shtmlTmp); 
+   			htmlTmp += '<button type="button" class="button blue" onclick="clearVal()">清除</button>';
+   			//htmlTmp += '<button type="button" class="button blue" onclick="back()">返回</button>';
+   			
+   			htmlTmp += '</td></tr>';
+   			
+   		 /* 	htmlTmp +='<tr ><td class="trackTD">关键字</td><td class="trackTDVal"><input type="text" name="word" id="word" maxlength="100" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/>';
+   			htmlTmp += '<button class="button blue" type="button" onclick="searchByWord()">搜索</button></td></tr>'; */
+   			
+   			htmlTmp += '</table>';
+   			htmlTmp += '</form>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	
+	    	
+	    	closeSpin();
+		}
+		
+		
+		//返回
+		function back(){
+			loadSpin("#wrap"); //转圈
+			window.location.href = "workorderTrack.html";
+			htmlTmp = "";
+			closeSpin();
+		}
+		
+		//var imgsrc=[];	//定义一个空数组，用来存放img的src
+		setTimeout(function(){
+			//拍照上传功能
+			var inputs = document.getElementById("pic");			
+			var imageType = /image.*/;
+			var imgs=document.getElementById("imgs");
+			
+			var getOnloadFunc = function(aImg) {
+					return function(evt) {
+						aImg.src = evt.target.result;
+						//alert(aImg.src);
+                    }
+				};
+					
+			    
+			if(inputs){	
+				inputs.addEventListener("change", function(evt) {					
+				    for (var i = 0, numFiles = this.files.length; i < numFiles; i++) {
+				        var file = this.files[i];
+				        if (!file.type.match(imageType)) {
+				            continue;
+				        }
+					    var img = document.createElement("img");
+					    
+
+					    var reader = new FileReader();					   					    
+					    reader.onload = getOnloadFunc(img);					
+					    img.className="IMG";
+					   // imgs.appendChild(img);
+					    	                    
+					    var canvas = document.createElement("canvas");
+					   canvas.style.width="100px";
+					   canvas.style.height="130px";
+					    imgs.appendChild(canvas);
+					    var ctx = canvas.getContext('2d');
+					    img.onload = function() {
+                        var w = img.naturalWidth,
+                        h = img.naturalHeight;
+                        canvas.width = w;
+                        canvas.height = h;
+                        ctx.drawImage(img, 0, 0, w, h, 0, 0, w/1, h/1);	 
+                       // $("vanvas").on("click",function(){
+                		//	$(this).addClass("big");
+                		//})
+                        fileUpload();
+                        function fileUpload() {
+       				     var data = canvas.toDataURL("image/jpeg", 0.5);
+       				     var imgdata = data;
+       				     //dataURL 的格式为 “data:image/png;base64,****”,逗号之前都是一些说明性的文字，我们只需要逗号之后的就行了
+       				    data = data.split(',')[1];
+       				    data = window.atob(data);
+       				    var ia = new Uint8Array(data.length);
+       				    for (var i = 0; i < data.length; i++) {
+       				          ia[i] = data.charCodeAt(i);
+       				    };
+       				     //canvas.toDataURL 返回的默认格式就是 image/png
+       				    var blob = new Blob([ia], {
+       				     type: "image/jpeg"
+       				    });
+       					var fup = document.getElementById("pic");
+       					var fileSize =  fup.files[0].size;//得到图片大小
+       					var fileName =  fup.files[0].name;//得到图片名称
+       				    var formData = new FormData($("#workOrderAddForm")[0]);  
+    					formData.append("myFile",blob);
+    					formData.append("imgdata",imgdata);
+    					formData.append("fileSize",fileSize);
+    					formData.append("fileName",fileName);
+    					var ticketNo = $("#ticketNo").get(0).innerHTML;
+    					formData.append("ticketNo",ticketNo);
+    					loadSpin("#wrap"); //转圈   			    	
+    			    	$.ajax({
+    						url :  '../WebUpload',  
+    						type: 'POST',  
+    			          	data:formData,
+    			          	//async: false,  
+    			          //cache: false,  
+    			          	contentType: false,  
+    			          	processData: false, 
+    			          	dataType: "json",
+    				    	error : function() {
+    				    		closeSpin();
+    				            //alert(maxFileSizeMsg);
+    				            popTipShow.alert('提示 ',maxFileSizeMsg, ['知道了'],
+			            				function(e){
+			            				  //callback 处理按钮事件		  
+			            				  var button = $(e.target).attr('class');
+			            				  if(button == 'ok'){
+			            					//按下确定按钮执行的操作
+			            					//todo ....
+			            					this.hide();
+			            				  }	
+			            				}
+			            			);
+    				            
+    				        },  
+    				        success : function(jsonObj) {  
+    				        	 if(jsonObj != null){
+    				        		 if(jsonObj.message == "fileTooMax"){
+    				        			 //alert("图片太大，请上传"+jsonObj.maxPicSize+"M以内的照片");
+    				        			 
+    				        			 popTipShow.alert('提示 ','图片太大，请上传'+jsonObj.maxPicSize+'M以内的照片', ['知道了'],
+    					            				function(e){
+    					            				  //callback 处理按钮事件		  
+    					            				  var button = $(e.target).attr('class');
+    					            				  if(button == 'ok'){
+    					            					//按下确定按钮执行的操作
+    					            					//todo ....
+    					            					this.hide();
+    					            				  }	
+    					            				}
+    					            			);
+    				        			 
+    				        			 
+    				        		 }else{    				        			 
+    				            		//alert(jsonObj.message);
+    				        		 }
+    				            	$("#tempTicketNo").val(jsonObj.ticketNo);
+    				            }else{
+    				            	closeSpin();
+    				            }
+    				        }  
+    					});
+    					
+    						
+                        };
+					    }
+					    closeSpin();
+					    reader.readAsDataURL(file);
+				    }
+				},false);
+			}	
+		},2000)
+		
+		
+
+
+		
+ 		//送出
+ 		function send(){
+			loadSpin("#wrap"); //转圈
+			//alert("send");			
+			var ticketNo = $("#ticketNo").get(0).innerHTML;
+			//alert("send----"+ticketNo);
+			var location = $("#location").val();
+			var floor = $("#floors").val();
+			var filler = $("#filler").val();		
+			var tel = $("#tel").val();	
+			var webchat = $("#webchat").val();		
+			var room = $("#room").val();
+			var queTypeName = $("#queTypeName").val();
+			var queDesc = $("#queDesc").val();
+			//alert(imgsrc);
+			if($.trim(tel) == ""){
+				alert("联络方式不能为空");
+				return false;
+			}else if($.trim(queDesc) == ""){
+				alert("问题描述不能为空");
+				return false;
+			}
+	     	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'SendApply',ticketNo:ticketNo,location:location,floor:floor,filler:filler,tel:tel,webchat:webchat,room:room,queTypeName:queTypeName,queDesc:queDesc},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		 if (jsonObj.type == "SendApply" && jsonObj.value == "-1"){
+								goLogin();
+							}else
+		            	if(jsonObj.type == "SendApply" && jsonObj.value == "1"){
+		            		//alert("送出成功！33gg");
+		            		  sendMessage();
+		            		popTipShow.alert('提示 ','送出成功', ['知道了'],
+		            				function(e){
+		            				  //callback 处理按钮事件		  
+		            				  var button = $(e.target).attr('class');
+		            				  if(button == 'ok'){
+		            					//按下确定按钮执行的操作
+		            					//todo ....
+		            					this.hide();
+		            				  }	
+		            				  if(jsonObj.orderSyncSwitch == "on" && jsonObj.systemValidateType == "tiup"){		            					  
+		            				  	synInfo(jsonObj.ticketNo);
+		            				  }else{
+		            					  back();
+		            				  }		            				  
+		            				  $("#btn").attr("disable","disabled");
+		            				  $("#btn").css({
+		            					  background:"#ccc",
+		            					  border:"1px solid #ccc",
+		            					  boxShadow: "none"
+		            				  })
+		            				  
+		            				  
+		            				 
+		            				}
+		            			);
+		            		
+		            		//alert("ticketNo" +jsonObj.ticketNo);
+		            		
+		            		//back();
+		            	}else if((jsonObj.type == "SendApply" && jsonObj.value == "0")){
+		            		//alert("送出失败！");
+		            		popTipShow.alert('提示','此单号已存在不能重复申报   送出失败！', ['知道了'],
+		            				function(e){
+		            				  //callback 处理按钮事件		  
+		            				  var button = $(e.target).attr('class');
+		            				  if(button == 'ok'){
+		            					//按下确定按钮执行的操作
+		            					//todo ....
+		            					this.hide();
+		            				  }	
+		            				  closeSpin();  //关闭转圈
+		            				  back();
+		            				}
+		            			);
+		            		
+							
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			}); 
+			closeSpin();
+		}  
+		
+		//发送通知
+		function sendMessage(){
+			loadSpin("#wrap"); //转圈
+			var ticketNo = $("#ticketNo").get(0).innerHTML;
+			var tel = $("#tel").val();	
+			var webchat = $("#webchat").val();		
+			var room = $("#room").val();
+			var queTypeName = $("#queTypeName").val();
+			var queTypeNameTxt=$("#queTypeName option:selected").text();
+			//alert(imgsrc);
+	     	$.ajax({
+				url :  '../SendMessage',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type:'17',ticketNo:ticketNo,tel:tel,webchat:webchat,room:room,queTypeName:queTypeName,queTypeNameTxt:queTypeNameTxt},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	closeSpin();
+		        }
+		 })
+		}
+		
+		//送出
+ 		function synInfo(ticketNo){
+			//alert("synInfo");
+			loadSpin("#wrap"); //转圈
+	     	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'SynInfo',ticketNo:ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		 if (jsonObj.type == "SynInfo" && jsonObj.value == "-1"){
+								goLogin();
+							}else
+		            	if(jsonObj.type == "SynInfo" && jsonObj.value == "1"){
+		            		//alert("同步结果:"+jsonObj.msg);
+		            		back();
+		            	}else if((jsonObj.type == "SynInfo" && jsonObj.value == "0")){
+		            		//alert("同步结果:"+jsonObj.msg);
+							closeSpin();  //关闭转圈
+							back();
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			}); 
+			closeSpin();
+		}  
+ 		
+		//清除
+		function clearVal(){
+			loadSpin("#wrap"); //转圈
+	 		$("#filler").attr("value","");	
+		 	$("#tel").attr("value","");	
+			$("#webchat").attr("value","");		
+			$("#room").attr("value","");
+			$("#queDesc").attr("value","");
+			closeSpin();
+		}
+		
+		//按关键字搜索
+	/* 	function searchByWord(){
+			loadSpin("#wrap"); //转圈
+			var word = $("#word").val();
+			if(word.replace(/(^s*)|(s*$)/g, "").length ==0){
+				alert("请输入关键字再查询！");
+			}else{
+			var path = 'http://127.0.0.1:8080/wcp/websearch/PubDo.do?word='+word;
+			window.open(path,'_self'); 
+			}
+			
+			closeSpin();
+		} */
+		
+		window.onload = function (){
+			 
+			connect();  //页面初始化方法
+			
+		};
+		
+		function changeMenuClass(index){
+			
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+
+			$("#subMenuImg1").attr('src','../style/images/menu1.png');
+			$("#subMenuImg2").attr('src','../style/images/menu2.png'); 
+			$("#subMenuImg3").attr('src','../style/images/menu3.png'); 
+			$("#subMenuImg4").attr('src','../style/images/menu4.png'); 
+			$("#subMenuImg"+index).attr('src','../style/images/menu' + index + '_on.png'); 
+			
+			
+			var htmlTmp = "";
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workOrderApply.html";
+				//window.location.href = "newWorkOrderApply.html";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "serviceValuation.html";
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				window.location.href='history.html?history=U';
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=U";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "grabTkt.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function changeMenuMore(index){
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+			if(index == 4){
+				$("#subMenuDiv_div").slideToggle(300);
+				$("#subMenuDiv"+index).removeClass("subMenuDivOn");
+			}
+		}
+		
+		function initMenu(flag){ 
+			if(flag == "C"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").hide();
+			}
+			else if(flag == "Y"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").show();
+			}else{
+				$("#menuDiv").show();
+				$("#menuDiv2").hide();
+			}
+		}
+		
+		
+	</script>
+	
+	</head>
+	
+	<body class="sub_bg">
+	    	<div id="contentDiv" class="contentDiv">
+		    	
+	    	</div>
+	    	
+	    	
+	    	<div id="menuDiv" class="menuDiv" hidden="true">
+		    	<div id="subMenuDiv1" class="subMenuDiv" onclick="changeMenuClass(1)">
+		    		<img id="subMenuImg1"  src="../style/images/menu1.png"><span style="vertical-align:middle;margin-top:10px;">申报</span>
+	    		</div>
+	    		<div id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><span style="vertical-align:middle;margin-top:10px;">跟踪</span>
+	    		</div>
+	    		<div id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3" src="../style/images/menu3.png"><span style="vertical-align:middle;margin-top:10px;">评价</span>
+	    		</div>
+	    		<div id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuClass(4)">
+		    		<img id="subMenuImg4"  src="../style/images/menu4.png"><span style="vertical-align:middle;margin-top:10px;">历史</span>
+	    		</div>
+	    	</div>
+		    
+			<div id="menuDiv2" class="menuDiv" hidden="true">
+	    		<ul style="width: 100%">
+		    	<li id="subMenuDiv1" class="subMenuDiv" onclick="changeMenuClass(1)">
+		    		<img id="subMenuImg1"  src="../style/images/menu1.png"><span style="vertical-align:middle;margin-top:10px;">申报</span>
+	    		</li>
+	    		<li id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><span style="vertical-align:middle;margin-top:10px;">跟踪</span>
+	    		</li>
+	    		<li id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3"  src="../style/images/menu3.png"><span style="vertical-align:middle;margin-top:10px;">评价</span>
+	    		</li>
+	    		
+	    		<li id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuMore(4)">
+	    			 <div class = "subMenuDiv_div" id = "subMenuDiv_div" hidden="true">
+		    			<ul id = "subMenuDiv_ul">
+		    			<li class="subMenuLi" onclick="changeMenuClass(5)"><img id="subMenuImg4_1"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;margin-top:10px;">历史</span>
+	    				</li>
+	    				<li class="subMenuLi" onclick="changeMenuClass(6)"><img id="subMenuImg4_2"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;margin-top:10px;">切换角色</span>
+	    				</li>
+	    				</ul>
+	    			</div>
+	    			<img id="subMenuImg4" src="../style/images/menu4.png"><span style="vertical-align:middle;margin-top:10px;">更多</span>
+	    		</li>
+	    		</ul>
+	    	</div>
+	    
+	</body>
+	<style type="text/css">
+	#menuDiv ul li,#menuDiv2 ul li{  float:left; list-style-type:none;}
+	#subMenuDiv_ul{ margin-top:-165%; width:100%;position: relative} 	
+	
+.button{
+width: 70px;
+line-height: 30px;
+text-align: center;
+font-weight: bold;
+color: #fff;
+margin:0 10px 10px 0;
+position: relative;
+overflow: hidden;
+}
+.button:nth-child(6n){
+margin-right: 0;
+}
+.pic{
+width:40px;
+height:30px;
+border:none;
+background-image:url(../style/images/icon_camera.png);
+background-size:100% 100%;
+background-color:transparent;
+}
+
+.button.blue{
+border:1px solid #32CD32;
+box-shadow: 0 1px 2px #32CD32 inset,0 -1px 0 #32CD32 inset,0 -2px 3px #32CD32 inset;
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+border:none;
+border-radius:4px;
+}
+
+.button.grey {
+	background:#B7BEC2;
+	border:none;
+}
+
+
+.blue:hover{
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+}
+
+.blue:active{
+top:1px;
+box-shadow: 0 1px 3px #3CB371 inset,0 3px 0 #32CD32;
+background: -webkit-linear-gradient(top,#3CB371,#3CB371);
+background: -moz-linear-gradient(top,#3CB371,#3CB371);
+background: linear-gradient(top,#3CB371,#3CB371);
+}
+
+.blue.side:hover:after{
+background:-webkit-linear-gradient(right,#32CD32,#3CB371 60%);
+background:-moz-linear-gradient(right,#32CD32,#3CB371 60%);
+background:linear-gradient(right,#32CD32,#3CB371 60%); 
+}
+
+.blue.side:active:after{
+box-shadow:-1px 0 1px #114566 inset;
+background:-webkit-linear-gradient(right,#3CB371,#3CB371 60%);
+background:-moz-linear-gradient(right,#3CB371,#3CB371 60%);
+background:linear-gradient(right,#3CB371,#3CB371 60%); 
+}
+
+.blue.rarrow:hover:after,
+	.blue.larrow:hover:after{
+background:-webkit-linear-gradient(top left,#70bfef,#4097ce);
+background:-moz-linear-gradient(top left,#70bfef,#4097ce);
+background:linear-gradient(top left,#70bfef,#4097ce);
+}
+
+.blue.rarrow:active:after,
+	.blue.larrow:active:after{
+background:-webkit-linear-gradient(top left,#1a71a8,#1976b1);
+background:-moz-linear-gradient(top left,#1a71a8,#1976b1);
+background:linear-gradient(top left,#1a71a8,#1976b1);
+}
+
+.blue.rarrow:active:after{
+box-shadow: 0 1px 0 #114566 inset,-1px 0 0 #114566 inset;
+}
+.blue.larrow:active:after{
+box-shadow: 0 -1px 0 #114566 inset,1px 0 0 #114566 inset;
+}
+	</style>
+</html>

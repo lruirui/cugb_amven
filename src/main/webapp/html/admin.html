@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>工单查询</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+	<!-- <link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" /> -->
+	<link rel="stylesheet" href="../style/css/common.css" />
+    <link rel="stylesheet" href="../style/css/main.css" />
+	<link rel="stylesheet" href="../style/css/font-awesome.min.css" />
+		
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script> 
+	<!-- <script src="../js/popmenu.js" ></script> -->
+	<script src="../js/jquery.cookie.js"></script>
+	<script type="text/javascript" src="../js/jquery/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="../js/echarts-all.js"></script>
+	
+    
+	<script src="../js/alertPopShow.js" ></script> 
+	<script type="text/Javascript" src="https://3gimg.QQ.com/lightmap/components/geolocation/geolocation.min.js"></script><!-- 腾讯获取坐标需要引入的 -->
+    <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp"></script>
+    <script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+	<script src="../js/giveLngAndLat.js" ></script>  
+	
+	<script type="text/javascript">
+	
+		//alert("Device Name= " + getDeviceName());  //设备信息测试
+	    
+	    //var urlUserId = $.getUrlParam('userId'); // http://localhost:8080/cugbItsm/html/index.html?userId=d031764
+	    //alert("Url param userId= " + urlUserId);  //url传参测试
+	    
+	   	var errorMsg = "服务器错误!";
+	   	var orderTypeChildTwoList=null;
+	   	
+		var ticketNo;
+		var filler;
+		var state;
+		var queTypeFather ;
+		var queTypeName;
+		
+		window.onpageshow = function(event){
+			   if (event.persisted) {
+			       window.location.reload();
+			   }
+			};
+	    
+	  //改变问题类型的值
+		function setChange(parentValue){
+			var info = "";
+			info += '<option value= "">-请选择-</option>';
+			for(var i=0;i<orderTypeChildTwoList.length;i++){ 
+				if(parentValue==orderTypeChildTwoList[i].pid){
+					info +="<option value="+orderTypeChildTwoList[i].uniqueID+">"+orderTypeChildTwoList[i].typeName+"</option>";
+				}
+				
+			}			
+			$("#queTypeName").html(info);
+		}
+	  
+		//清除
+		function clearVal(){
+			loadSpin("#wrap"); //转圈
+	 		$("#ticketNo").attr("value","");	
+			$("#filler").attr("value","");		
+			$("#state").attr("value","");
+			$("#queTypeFather").attr("value","");			
+			$("#queTypeName").attr("value","");
+			closeSpin();
+		}
+	 
+	    //连接
+	    function connect() {
+	    	loadSpin("#wrap"); //转圈
+	    	//ajax请求示例，调用WebRequestController.java
+	    	$.ajax({
+				url :  '../Admin',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'TrackList_FIRST', userId: 'test'},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	adminflag=jsonObj.adminflag;
+		            	initMenu(jsonObj.roleflag,jsonObj.adminflag);
+		            	if(jsonObj.type == "TrackList_FIRST" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else if(jsonObj.type == "TrackList_FIRST" && jsonObj.value == "1" && jsonObj.adminflag == "Y"){
+		            		//将工单列表存放在sessionStorage
+ 		            		sessionStorage.setItem('content', JSON.stringify(jsonObj.content));
+		            		showWorkList(jsonObj.content,jsonObj.stateList,eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            	}else if(jsonObj.type == "TrackList_FIRST" && jsonObj.value == "0"){
+		            		showNullInfo();  //关闭转圈
+						}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+	    	
+	    }
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }	    
+	    function showNullInfo(queTypeFather,queTypeName,state,filler,ticketNo,content,stateList,orderTypeFatherList,orderTypeChildList){
+	    	orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量，用于显示故障类型下拉值。
+	    	var htmlTmp = "";
+
+			var htmlTmp = '<span class="list_group">工单查询</span>';
+			htmlTmp += '<table class="content_table alignCenter">'; 
+			htmlTmp += '<tr><td>单号查询</td><td><input type="text" id="ticketNo" name="ticketNo" placeholder="请输入"/></td></tr>';
+			htmlTmp += '<tr><td>申请人查询</td><td><input type="text" id="filler" name="filler" placeholder="请输入"/></td></tr>';
+			htmlTmp += '<tr><td>状态查询</td><td>';
+			htmlTmp += '<select id="state"  name="state">';
+			htmlTmp += '<option value="">全部</option>';    
+			for(i = 0;i < stateList.length;i++){
+				htmlTmp += '<option  value= "'+stateList[i].dictID+'">'+stateList[i].dictName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '</td></tr>';
+			htmlTmp += '<tr><td>问题类型</td><td><select id = "queTypeFather" onchange="setChange(this.value)">';
+			htmlTmp +='<option value= "">-请选择-</option>';
+			for(i = 0;i < orderTypeFatherList.length;i++){
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'">'+orderTypeFatherList[i].typeName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '<select id="queTypeName">';
+			htmlTmp +='<option value= "">-请选择-</option>';
+ 			for(i = 0;i < orderTypeChildList.length;i++){
+ 				if(orderTypeChildList[i].pid==queTypeFather){
+ 					htmlTmp += '<option value= "'+orderTypeChildList[i].uniqueID+'">'+orderTypeChildList[i].typeName+'</option>';	
+ 				}
+			} 
+ 			htmlTmp += "</select></td></tr>";
+ 			htmlTmp += '<tr><td></td><td>'; 
+   			htmlTmp += '<button type="button" class="marginR08r width50" id="btn" onclick="send()">查询</button>';
+   			htmlTmp += '<button type="button" class="width50" onclick="clearVal()">清除</button>';   			
+   			htmlTmp += '</td></tr>';		
+			htmlTmp += '</table>'; 
+	    	htmlTmp += '<span class="list_group nodata">目前暂无服务单号</span>';  
+	    	$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	//拼完后重新赋值查询条件
+    		$("#ticketNo").val(ticketNo);
+    		$("#filler").val(filler);
+    		$("#state").find("option[value='"+state+"']").attr("selected",true);
+    		$("#queTypeFather").find("option[value='"+queTypeFather+"']").attr("selected",true);
+    		$("#queTypeName").find("option[value='"+queTypeName+"']").attr("selected",true);
+	    	
+	    	closeSpin();
+	    }
+	    
+		function showWorkList(content,stateList,orderTypeFatherList,orderTypeChildList){
+			orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量，用于显示故障类型下拉值。
+			var htmlTmp = "";
+
+			var htmlTmp = '<span class="list_group">工单查询</span>';
+			htmlTmp += '<table class="content_table alignCenter">'; 
+			htmlTmp += '<tr><td>单号查询</td><td><input type="text" id="ticketNo" name="ticketNo" placeholder="请输入"/></td></tr>';
+			htmlTmp += '<tr><td>申请人查询</td><td><input type="text" id="filler" name="filler" placeholder="请输入"/></td></tr>';
+			htmlTmp += '<tr><td>状态查询</td><td>';
+			htmlTmp += '<select id="state"  name="state">';
+			htmlTmp += '<option value="">全部</option>';    
+			for(i = 0;i < stateList.length;i++){
+				htmlTmp += '<option  value= "'+stateList[i].dictID+'">'+stateList[i].dictName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '</td></tr>';
+			htmlTmp += '<tr><td>问题类型</td><td><select id = "queTypeFather" onchange="setChange(this.value)">';
+			htmlTmp +='<option value= "">-请选择-</option>';
+			for(i = 0;i < orderTypeFatherList.length;i++){
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'">'+orderTypeFatherList[i].typeName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '<select id="queTypeName">';
+			htmlTmp +='<option value= "">-请选择-</option>';
+ 			for(i = 0;i < orderTypeChildList.length;i++){
+ 				if(orderTypeChildList[i].pid=="1"){
+ 					htmlTmp += '<option value= "'+orderTypeChildList[i].uniqueID+'">'+orderTypeChildList[i].typeName+'</option>';	
+ 				}
+			} 
+ 			htmlTmp += "</select></td></tr>";
+ 			htmlTmp += '<tr><td></td><td>'; 
+   			htmlTmp += '<button type="button" class="marginR08r width50" id="btn" onclick="send()">查询</button>';
+   			htmlTmp += '<button type="button" class="width50" onclick="clearVal()">清除</button>';   			
+   			htmlTmp += '</td></tr>';
+ 			
+			
+			htmlTmp += '</table>'; 
+			htmlTmp += '<span class="content_size"><ul class="wait_ul">';
+
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			/* htmlTmp += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><i>'
+    				+ content[i].filler + content[i].pubTime +'</i><i>'
+    				+content[i].queType+'</i><i>'
+    				+content[i].building+'</i><i>'
+    				+ '</i></a></li>'; */
+    				
+    			htmlTmp += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><em class="icon_file"></em><span><b>'
+				+ content[i].filler 
+				+'<i style="color: #71e9ff;margin-left:5px">'+ content[i].pubTime+'</i>'
+				+'</b><em>'
+				+'</em><i>'
+				+ content[i].queType
+				+'</i><br><strong>'
+				+ content[i].building
+				+'</strong></span></a></li>';
+    		}
+    		
+    		htmlTmp += '</ul></span>';
+    		
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	closeSpin();
+		}
+		
+		function showWorkList2(queTypeFather,queTypeName,state,filler,ticketNo,content,stateList,orderTypeFatherList,orderTypeChildList){
+			orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量，用于显示故障类型下拉值。
+			
+			var htmlTmp = "";
+
+			var htmlTmp = '<span class="list_group">工单查询</span>';
+			htmlTmp += '<table class="content_table alignCenter">'; 
+			htmlTmp += '<tr><td>单号查询</td><td><input type="text" id="ticketNo" name="ticketNo" placeholder="请输入"/></td></tr>';
+			htmlTmp += '<tr><td>申请人查询</td><td><input type="text" id="filler" name="filler" placeholder="请输入"/></td></tr>';
+			htmlTmp += '<tr><td>状态查询</td><td>';
+			htmlTmp += '<select id="state"  name="state">';
+			htmlTmp += '<option value="">全部</option>';    
+			for(i = 0;i < stateList.length;i++){
+				htmlTmp += '<option  value= "'+stateList[i].dictID+'">'+stateList[i].dictName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '</td></tr>';
+			htmlTmp += '<tr><td>问题类型</td><td><select id = "queTypeFather" onchange="setChange(this.value)">';
+			htmlTmp +='<option value= "">-请选择-</option>';
+			for(i = 0;i < orderTypeFatherList.length;i++){
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'">'+orderTypeFatherList[i].typeName+'</option>';
+			}
+			htmlTmp += '</select>';
+			htmlTmp += '<select id="queTypeName">';
+			htmlTmp +='<option value= "">-请选择-</option>';
+ 			for(i = 0;i < orderTypeChildList.length;i++){
+ 				if(orderTypeChildList[i].pid==queTypeFather){
+ 					htmlTmp += '<option value= "'+orderTypeChildList[i].uniqueID+'">'+orderTypeChildList[i].typeName+'</option>';	
+ 				}
+			} 
+ 			htmlTmp += "</select></td></tr>";
+ 			htmlTmp += '<tr><td></td><td>'; 
+   			htmlTmp += '<button type="button" class="marginR08r width50" id="btn" onclick="send()">查询</button>';
+   			htmlTmp += '<button type="button" class="width50" onclick="clearVal()">清除</button>';   			
+   			htmlTmp += '</td></tr>';
+ 			
+			
+			htmlTmp += '</table>'; 
+			htmlTmp += '<span class="content_size"><ul class="wait_ul">';
+
+    		var i=0;
+    		for(i; i<content.length; i++){
+    			/* htmlTmp += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><i>'
+				+ content[i].filler + content[i].pubTime +'</i><i>'
+				+content[i].queType+'</i><i>'
+				+content[i].building+'</i><i>'
+				+ '</i></a></li>'; */
+				
+    			htmlTmp += '<li><a href="#" onclick="getOrderDetail(\'' + content[i].serviceNo + '\');"><em class="icon_file"></em><span><b>'
+				+ content[i].filler 
+				+'<i style="color: #71e9ff;margin-left:5px">'+ content[i].pubTime+'</i>'
+				+'</b><em>'
+				
+				+'</em><i>'
+				+ content[i].queType
+				+'</i><br><strong>'
+				+ content[i].building
+				+'</strong></span></a></li>';
+    		}
+    		
+    		htmlTmp += '</ul></span>';
+    		
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	//拼完后重新赋值查询条件
+    		$("#ticketNo").val(ticketNo);
+    		$("#filler").val(filler);
+    		$("#state").find("option[value='"+state+"']").attr("selected",true);
+    		$("#queTypeFather").find("option[value='"+queTypeFather+"']").attr("selected",true);
+    		$("#queTypeName").find("option[value='"+queTypeName+"']").attr("selected",true);
+	    	closeSpin();
+		}
+		
+ 		//送出
+ 		function send(){
+			loadSpin("#wrap"); //转圈
+			 ticketNo = $("#ticketNo").val();
+			 filler = $("#filler").val();
+			 state = $("#state").val();
+			 queTypeFather = $("#queTypeFather").val();
+			 queTypeName = $("#queTypeName").val();			
+	     	$.ajax({
+				url :  '../Admin',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'TrackList', userId: 'test',ticketNo:ticketNo,filler:filler,state:state,queTypeFather:queTypeFather,queTypeName:queTypeName},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	initMenu(jsonObj.roleflag,jsonObj.adminflag);
+		            	if(jsonObj.type == "TrackList" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else if(jsonObj.type == "TrackList" && jsonObj.value == "1" && jsonObj.adminflag == "Y"){
+		            		showWorkList2(jsonObj.queTypeFather,jsonObj.queTypeName,jsonObj.state,jsonObj.filler,jsonObj.ticketNo,jsonObj.content,jsonObj.stateList,eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            	}else if(jsonObj.type == "TrackList" && jsonObj.value == "0"){
+		            		showNullInfo(jsonObj.queTypeFather,jsonObj.queTypeName,jsonObj.state,jsonObj.filler,jsonObj.ticketNo,jsonObj.content,jsonObj.stateList,eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+						}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }
+		    
+			}); 
+		} 
+ 		
+ 		//返回后查询一次
+ 		function send2(ticketNo,filler,state,queTypeFather,queTypeName){
+			loadSpin("#wrap"); //转圈
+	     	$.ajax({
+				url :  '../Admin',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'TrackList', userId: 'test',ticketNo:ticketNo,filler:filler,state:state,queTypeFather:queTypeFather,queTypeName:queTypeName},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	initMenu(jsonObj.roleflag,jsonObj.adminflag);
+		            	if(jsonObj.type == "TrackList" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else if(jsonObj.type == "TrackList" && jsonObj.value == "1" && jsonObj.adminflag == "Y"){
+		            		showWorkList2(jsonObj.queTypeFather,jsonObj.queTypeName,jsonObj.state,jsonObj.filler,jsonObj.ticketNo,jsonObj.content,jsonObj.stateList,eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            	}else if(jsonObj.type == "TrackList" && jsonObj.value == "0"){
+		            		showNullInfo(jsonObj.queTypeFather,jsonObj.queTypeName,jsonObj.state,jsonObj.filler,jsonObj.ticketNo,jsonObj.content,jsonObj.stateList,eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+						}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }
+		    
+			}); 
+		} 
+	    
+		function getOrderDetail(serviceNo){
+			//alert("serviceNo"+serviceNo);
+			loadSpin("#wrap"); //转圈
+	    	//ajax请求示例，调用WebRequestController.java
+	    	$.ajax({
+				url :  '../Admin',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'TrackDetail', userId: serviceNo},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	if(jsonObj.type == "TrackDetail" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else if(jsonObj.type == "TrackDetail" && jsonObj.value == "1"){
+		            		showWorkOrder(eval(jsonObj.resultList),jsonObj.content,jsonObj.fileList);
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			closeSpin();
+			
+		}
+		
+		function reminder(stuEmpno,userId){
+			//alert("reminder");
+			loadSpin("#wrap"); //转圈
+	    	//ajax请求示例，调用WebRequestController.java
+	    	$.ajax({
+				url :  '../Track',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {id: "1", type: 'Reminder', userId: userId,stuEmpno:stuEmpno},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		        },  
+		        success : function(jsonObj) {  
+		        	//alert("Response = " + JSON.stringify(jsonObj));
+		            if(jsonObj != null){
+		            	if(jsonObj.type == "Reminder" && jsonObj.value == "-1"){
+		            		goLogin();
+		            	}else if(jsonObj.type == "Reminder" && jsonObj.value == "1"){
+		            		//alert("催单成功！");
+		            		
+		            		popTipShow.alert('提示 ','催单成功 ', ['知道了'],
+		            				function(e){
+		            				  //callback 处理按钮事件		  
+		            				  var button = $(e.target).attr('class');
+		            				  if(button == 'ok'){
+		            					//按下确定按钮执行的操作
+		            					//todo ....
+		            					this.hide();
+		            				  }	
+		            				 closeSpin();  //关闭转圈
+		      		            	back(); 
+		            				}
+		            			);
+		            	}else{
+		            		//alert("催单失败！请重试");
+		            		
+		            		popTipShow.alert('提示 ','催单失败！请重试 ', ['知道了'],
+		            				function(e){
+		            				  //callback 处理按钮事件		  
+		            				  var button = $(e.target).attr('class');
+		            				  if(button == 'ok'){
+		            					//按下确定按钮执行的操作
+		            					//todo ....
+		            					this.hide();
+		            				  }	
+		            				  closeSpin();  //关闭转圈
+		  			            	back(); 
+		            				}
+		            		
+		            			);
+		            		
+						}	
+		            	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			closeSpin();
+			
+		}
+		
+		function unReminder(msg){
+			//alert(msg);
+			
+			popTipShow.alert('提示 ',msg, ['知道了'],
+    				function(e){
+    				  //callback 处理按钮事件		  
+    				  var button = $(e.target).attr('class');
+    				  if(button == 'ok'){
+    					//按下确定按钮执行的操作
+    					//todo ....
+    					this.hide();
+    				  }	
+    				}
+    			);
+			
+		}
+		
+		function showWorkOrder(resultList,content,fileList){
+			initMenu("C");
+			var pre;
+			var next;
+			var contentJsonStr = sessionStorage.getItem('content');
+    		contentEntity = JSON.parse(contentJsonStr);
+    		console.log(contentEntity.length);
+    		for(var i=0;i<contentEntity.length;i++){
+    			if(contentEntity[i].serviceNo==content.ticketNo){
+    				pre=i-1;
+    				next=i+1;
+    				if(i==0){
+    					pre=contentEntity.length-1;
+    				}
+    				if(i==contentEntity.length-1){
+    					next=0;
+    				}
+    				break;
+    			}
+    				
+    		} 
+			$("#contentDiv").get(0).innerHTML = "";
+			var htmlTmp = "";
+			htmlTmp +='<span class="ser_code"><i class="icon-paste"></i> 服务单号 <i>'+ content.ticketNo + '</i></span>';
+			htmlTmp += '<span class="content_size">';
+			htmlTmp += '<table class="content_table">';
+			htmlTmp += '<tr><td>填单日期</td><td>'+content.createDate+'</td></tr>';
+			htmlTmp += '<tr><td>填单类型</td><td>'+content.fillType+'</td></tr>';
+			htmlTmp += '<tr><td>问题类型</td><td>'+content.typeName+'</td></tr>';
+			htmlTmp += '<tr><td>服务地点</td><td>'+content.building+"-"+content.floor+"层"+"-"+content.room+'</td></tr>';
+			htmlTmp += '<tr><td>问题描述</td><td>'+content.queDesc+'</td></tr>';
+			htmlTmp += '<tr><td>申请人</td><td>'+content.filler+'</td></tr>';
+			htmlTmp += '<tr><td>联络方式</td><td>'+content.tel+'</td></tr>';
+			htmlTmp += '<tr><td>微信号</td><td>'+content.webchat+'</td></tr>';
+			htmlTmp += '<tr><td>派单方式</td><td>'+content.sendWay+'</td></tr>';
+			htmlTmp += '<tr><td>处理状态</td><td>'+content.orderStatus+'</td></tr>';
+			htmlTmp += '<tr><td>处理次数</td><td>'+content.procTimes+'</td></tr>';
+			//htmlTmp += '<tr><td class="text_nowrap">处理人员位置</td><td>'+content.location+'</td></tr>';
+			htmlTmp += '<tr><td class="text_nowrap">处理人员等级</td><td>'+content.level+'</td></tr>';
+			htmlTmp += '<tr><td>处理人</td><td>'+content.procEmpName+'</td></tr>';
+			htmlTmp += '<tr><td class="text_nowrap">处理人联络方式</td><td>'+content.sTel+'</td></tr>';
+			htmlTmp += '<tr><td class="text_nowrap">处理人微信号</td><td>'+content.sWebchat+'</td></tr>';
+			htmlTmp += '<tr><td>工作类型</td><td>'+content.procWay+'</td></tr>';
+			htmlTmp += '<tr><td>评价意见</td><td>'+content.idea+'</td></tr>';
+			//htmlTmp += '<tr id="trchat"><td>评分</td><td><div id="chart2" class="easyui-panel" style="width:345px;height:220px;" ></div></td></tr>';
+   			htmlTmp += '<tr><td>评分</td><td></td></tr>';
+			htmlTmp += '<tr id="trchat"><td colspan="2" id="chart2" class="easyui-panel" style="width:300%;height:220px;" ></td></tr>';
+	/* 		var i=0;
+   				for(i; i<fileList.length; i++){
+   	   				htmlTmp += '<tr><td>附件</td><td><img width="200" height="150" alt="" src="'+fileList[i].nfileName+'"></td></tr>';
+   	    		}	 */
+   				if(fileList.length>0){
+   					for(var i=0;i<fileList.length;i++){
+   						htmlTmp += '<tr><td>附件</td><td><img style="width:100px;height:100px;" src="'+fileList[i].nfileName+'"/></td></tr>';
+   					}
+   				}
+    		htmlTmp += '<tr><td>处理结果</td><td>'+content.processDesc+' '+content.processStatus+'</td></tr>';
+    	
+    		if(resultList.length>0){
+   				htmlTmp += '<tr><td>处理记录</td><td>'+'</td></tr>';
+   				for(var i=0;i<resultList.length;i++){
+   					htmlTmp += '<tr><td>'+'</td><td>'+'<'+eval(i+1)+'>'+'&nbsp;&nbsp;<span>[处理人]</span>'+resultList[i].serviceName+'&nbsp;&nbsp;<span>[状态]</span>'+resultList[i].processStatus+'&nbsp;&nbsp;<span>[说明]</span>'+resultList[i].processDesc+'&nbsp;'+resultList[i].unProcessDesc+'</td></tr>';
+   					htmlTmp += '<tr><td>'+'</td><td>'+ '&nbsp;&nbsp;&nbsp;&nbsp;<small>'+resultList[i].createDate+'</small></td></tr>';
+   				}		
+   			}
+    		htmlTmp += '</table>';
+   			htmlTmp += '</span>';
+   			if(content.ticketStatus == "Step03"){   				
+	    		htmlTmp += '<span class="action_btn"><button class="marginR08r width50" type="button" onclick="showMapBaiduDeclarer(\''+content.buildingName+'\',\''+content.procEmpno+'\')">刷新地图</button><div class="clearfix"></div></span>';
+	    		htmlTmp += '<span class="map" id="showMap"></span>';
+   			}
+    		htmlTmp += '<span class="action_btn">';
+    		htmlTmp += '<button type="button" class="width30" onclick="getOrderDetail(\''+contentEntity[next].serviceNo+'\')">下一个</button>'; 
+   			htmlTmp += '<button type="button" class="width30" onclick="back()">返回</button>'; 
+   			htmlTmp += '<button type="button" class="width30" onclick="getOrderDetail(\''+contentEntity[pre].serviceNo+'\')">上一个</button>'; 
+   		
+   			htmlTmp += '<div class="clearfix"></div>';
+   			htmlTmp += '</span>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+    		//htmlTmp拼完之后在调用地图，显示评价echats
+    		showQueryEvaluation(content.ticketNo);
+    		//htmlTmp拼完之后在调用地图，否则找不到id="showMap"
+    		if(content.ticketStatus == "Step03"){    
+    			showMapBaiduDeclarer(content.buildingName,content.procEmpno);
+    		}
+	    	
+	    	closeSpin();
+		}
+		
+		function showQueryEvaluation(ticketNo){
+			$.ajax({
+				url :  '../Evaluation',  
+		    	type : 'POST',  
+		    	dataType : 'text', 
+		    	data: {id: "1", type: 'EvaluationList', ticketNo: ticketNo},
+		    	error : function() {
+		    		closeSpin();
+		            //alert(errorMsg);
+		            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+            				function(e){
+            				  //callback 处理按钮事件		  
+            				  var button = $(e.target).attr('class');
+            				  if(button == 'ok'){
+            					//按下确定按钮执行的操作
+            					//todo ....
+            					this.hide();
+            				  }	
+            				}
+            			);
+		            
+		        },  
+		        success : function(data) { 
+		        	var result = $.parseJSON(data);
+		    		if (result!=null) { 
+		    			var myChart1 = echarts.init(document
+		    					.getElementById('chart2'));
+		    			var option = {
+		    				//title : {
+		    					//text : '服务评价总分'+result.obj.toltal
+		    				//	text : ''
+		    				//},
+		    				tooltip : {},
+		    				legend : {
+		    					//data : [ '服务评价' ]
+		    					data : [ '' ]
+		    				},
+		    				/*
+		    				xAxis : [{
+		    					data : result.obj.name,
+		    					splitLine : {
+		    						show : false
+		    					},
+		    				}],
+		    				yAxis : [{
+		    					splitLine:{
+		    						show:false
+		    					}
+		    				}],*/
+		    				xAxis : [{
+		    						type : 'value' ,
+		    						axisLabel : {
+	    	                            textStyle: {
+	    	                                color: '#fff'
+	    	                            }
+	    	                        },
+		    						splitLine : {
+		    						show : false
+		    							},		    						
+		    						}],
+		    				yAxis : [{
+		    						type: 'category',
+		    						data : result.name,
+		    						axisLabel : {
+		    	                            textStyle: {
+		    	                                color: '#fff'
+		    	                            }
+		    	                       },
+		    						splitLine:{
+		    						show:false
+		    						}
+		    						}],
+		    				series : [ {
+		    					name : '服务评价3',
+		    					type : 'bar',		    					
+		    					data : result.value,
+		    					itemStyle : {
+		    						normal : {
+		    							//color : '#CD2626',控制柱状条的颜色
+		    							label : {
+		    								show : true		    								
+		    							},
+		    							labelLine : {
+		    								show : true
+		    							}
+		    						},
+		    						emphasis : {
+		    							shadowBlur : 10,
+		    							shadowOffsetX : 0,
+		    							shadowColor : 'rgba(0, 0, 0, 0.5)'
+		    						}
+		    					}
+		    				} ]
+		    			};
+		    			myChart1.setOption(option);
+		    			if(result.toltal==0){
+		    				$("#trchat").hide();
+		    				$("#chart2").hide();	
+		    			}
+		    		 }
+		        }  
+			});
+		}
+		
+
+		
+		
+		
+		//返回
+		function back(){
+			loadSpin("#wrap"); //转圈
+			send2(ticketNo,filler,state,queTypeFather,queTypeName);
+			//window.location.href = "admin.html";
+			closeSpin();
+		}
+		
+		function showReverseDiv(ticketNo){
+			//alert("ticketNo" +ticketNo)
+			loadSpin("#wrap"); //转圈
+			closeSpin();
+			window.location.href = "workorderReverse.html?ticketNo="+ticketNo;
+		}
+		 
+		window.onload = function (){
+			var adminflag;
+			connect();  //页面初始化方法
+			//pushHistory();
+			
+		};
+		
+	
+        //防止页面后退
+ /*        history.pushState(null, null, document.URL);
+        alert(document.URL);
+        window.addEventListener('popstate', function () {
+        	alert(document.URL);
+            history.pushState(null, null, document.URL);
+        }); */
+        
+        
+        //页面后退
+        function pushHistory(){
+        	//alert("document.referrer:"+document.referrer);
+              window.addEventListener('popstate', function (e) {
+              	/* alert("Listener document.referrer:"+document.referrer);
+              	alert("Listener document.URL:"+document.URL);
+              	alert("浏览器后退事件"); */
+              	if(document.URL.indexOf("#")==-1){
+              		//alert("执行");
+              	 self.location=document.referrer;//单点一次可以，在用户多次点击同一个菜单按钮时，不能后退
+              	//window.history.back(-2);//单击一次不行，多次可以
+              	//window.history.go(-2);//单点一次不行
+              	}
+              });
+                history.pushState(null,null,document.URL); 
+              	//是否是从登录页面进来
+              	
+         /*      if(document.referrer.indexOf("/html/index.jsp?code=")){
+            	  history.pushState(null,null,document.URL);
+              }else{
+            	  history.pushState(null, null, document.referrer);
+              } */
+             } 
+
+		
+		function changeMenuClass(index){
+			
+			var htmlTmp = "";
+			
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "admin.html";
+				//window.location.href = "newWorkOrderApply.html";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				if(adminflag=="Y"){
+					window.location.href = "wcp.html";
+				}
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				if(adminflag=="Y"){
+					window.location.href = "report.html";
+				}
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				window.location.href='history.html?history=U';
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=U";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 7){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function changeMenuMore(index){
+			if(index == 4){
+				ini_menu();  //调用popmenu.js新写的方法中
+			}
+		}
+		
+		function initMenu(flag,adminflag){ 
+			if(flag == "C"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").hide();
+			}else if(adminflag == "Y"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").show();
+				$("#admin_div").show();
+			}else if(flag == "Y"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").show();
+			}else{
+				$("#menuDiv").show();
+				$("#menuDiv2").hide();
+			}
+		}
+	  
+		
+		/* $(document).ready(function(){
+			  $("#changeImg").toggle(function(){
+			    $("body").css({"background":"url(/cugItsm/images/gic.jpg) center center no-repeat","background-size":"cover"});},
+			    function(){
+			    $("body").css({"background":"url(/cugItsm/images/sub_bg.jpg) center center no-repeat","background-size":"cover"});},
+			  );
+			}); */
+	</script>
+	
+	</head>
+	
+	<body class="sub_bg">
+	    	<div id="contentDiv" class="main_area">
+		    	
+	    	</div>
+	    	
+	    	    <div id="menuDiv" class="footer_area" hidden="true">
+	      <ul class="footer_ul">
+           <li class="current"><a href="javascript:void(0)" onclick="changeMenuClass(1)"><i class="icon_sb"></i><b>工单查询</b></a></li>
+           <li><a href="javascript:void(0)" onclick="changeMenuClass(2)"><i class="icon_gz"></i><b>知识库维护</b></a></li>
+           <li><a href="javascript:void(0)" onclick="changeMenuClass(3)"><i class="icon_pj"></i><b>报表查询</b></a></li>
+           <li><a href="javascript:void(0)" onclick="changeMenuClass(4)"><i class="icon_history"></i><b>历史</b></a></li>
+          </ul>
+           <span class="bg_span"></span>
+          </div> 
+	    
+	    <div id="menuDiv2" class="footer_area" hidden="true">
+		   <ul class="footer_ul">
+            <li  class="current"><a href="javascript:void(0)" onclick="changeMenuClass(1)"><i class="icon_sb"></i><b>工单查询</b></a></li>
+            <li><a href="javascript:void(0)" onclick="changeMenuClass(2)"><i class="icon_gz"></i><b>知识库维护</b></a></li>
+            <li><a href="javascript:void(0)" onclick="changeMenuClass(3)"><i class="icon_pj"></i><b>报表查询</b></a></li>
+            <li id="pop_more"><a href="javascript:void(0)" onclick="changeMenuMore(4)"><i class="icon_more2"></i><b>更多</b></li>
+          </ul>
+	       <span class="bg_span"></span>	     	
+	   </div>
+	   
+	   <!--弹出区域start-->
+	<div class="pop_area" id="pop_more_content" style="display:none;height: 24rem;">
+       <ul class="pop_ul">
+         <li class="solid"><a href="javascript:void(0)" onclick="changeMenuClass(5)"><i class="icon_history"></i><b>历史</b></a></li>
+         <li><a href="javascript:void(0)" onclick="changeMenuClass(6)"><i class="icon_role"></i><b>切换角色</b></a></li>
+         <li><a href="#" id="changeImg"><i class="icon_change"></i><b>切换皮肤</b></a></li>
+       </ul>
+	  </div>
+	  <!--弹出区域end-->
+	    
+	</body>
+	<style type="text/css">
+	#menuDiv ul li,#menuDiv2 ul li{  float:left; list-style-type:none;}
+	#subMenuDiv_ul{ margin-top:-150%; width:100%;position: relative} 	
+	
+.button{
+width: 70px;
+line-height: 30px;
+text-align: center;
+font-weight: bold;
+color: #fff;
+margin:0 10px 10px 0;
+position: relative;
+overflow: hidden;
+}
+.button:nth-child(6n){
+margin-right: 0;
+}
+
+.button.blue{
+border:1px solid #3CB371;
+box-shadow: 0 1px 2px #32CD32 inset, 0 -1px 0 #32CD32 inset, 0 -2px 3px #32CD32 inset;
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+
+}
+.button.grey {
+	background:#B7BEC2;
+	border:none;
+}
+
+.blue:hover{
+background: -webkit-linear-gradient(top,#43CD80,#43CD80);
+background: -moz-linear-gradient(top,#43CD80,#43CD80);
+background: linear-gradient(top,#43CD80,#43CD80);
+}
+
+
+	</style>
+	<script src="../js/app.js" ></script>
+	<script>
+	function ini_menu(){
+		$(".main_area").click(function(){
+			$("#pop_more_content").attr("style", "display:none;");
+		});
+		
+	   if($("#pop_more_content").is(':hidden') == true)
+			 {
+			 $("#pop_more_content").attr("style", "display:block;height: 18rem;");
+			 }else{
+				 $("#pop_more_content").attr("style", "display:none;"); }
+		
+		
+		var hdw = $('.footer_ul li');
+		hdw.click(function(){
+			$(this).addClass('current').siblings().removeClass('current');
+		});
+	}
+
+	//下拉收缩工单效果
+	function pull_down(){
+		$("#appoint_area").click(function(){
+			targetSlidedown($("#appoint_ul"));
+		});
+		
+		$("#handle_area").click(function(){			
+			targetSlidedown($("#handle_ul"));
+		});
+		
+		$("#auto_area").click(function(){			
+			targetSlidedown($("#auto_ul"));
+		});
+	}
+	function ini_menu2(){
+
+
+			if($("#pop_more_content2").is(':hidden') == true)
+			{
+				$("#pop_more_content2").attr("style", "display:block;height: 23rem;");
+			}else{$("#pop_more_content2").attr("style", "display:none;"); }
+
+		
+		var hdw = $('.footer_ul li');
+		hdw.click(function(){
+			$(this).addClass('current').siblings().removeClass('current');
+		});
+	}
+	</script>
+</html>

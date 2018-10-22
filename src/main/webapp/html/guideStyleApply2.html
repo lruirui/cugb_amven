@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>向导式工单申报第二步</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	
+	
+	<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<link rel="stylesheet" href="../style/css/mobile.css" />
+
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script>
+	
+	<script src="../js/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<!-- <script src="../js/bootstrap-3.3.7/respond.min.js"></script> -->
+
+
+<link rel="stylesheet" href="../style/css/common.css" /> 
+ <link href="../js/bootstrap-3.3.7/css/bootstrap.css" rel="stylesheet">
+<link href="../js/bootstrap-3.3.7/css/bootstrap-theme.css" rel="stylesheet"> 
+
+	<link rel="stylesheet" href="../style/css/common.css" /> 
+	<script src="../js/alertPopShow.js" ></script>
+	<script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+	<script src="../js/giveLngAndLat.js" ></script>    
+	<style type="text/css">
+		.trackTD{
+			 nowrap;
+			 text-align:left;
+			 vertical-align:middle;
+			 width:30%;
+			 padding:5px 0px 5px 10px; 
+			 
+		}
+		
+		.trackTDVal{
+			 text-align:left;
+			 vertical-align:middle;
+			 padding:5px 10px 5px 10px;
+			 font-Weight:bold;
+			 color:black; 
+		}
+		.trackBtn{
+			 nowrap;
+			 vertical-align:middle;
+			 padding:10px 0px 5px 5px;
+			 text-align:right;
+			 padding-right:20px;
+		}
+		input {
+ 			border: 1px solid #2468a2;
+		}
+		.file {
+		    position: relative;
+		    display: inline-block;
+		    overflow: hidden;
+		    color: #1E88C7;
+		    text-decoration: none;
+		    text-indent: 0;
+		    width: 40px;
+		    height: 30px;
+		    background: url(../style/images/icon_camera.png) no-repeat;
+		    background-size:100% 100%;
+		}
+		.file input {
+			width:40px;
+			height:30px;
+		    position: absolute;
+		    left: 0;
+		    top: 0;
+		    opacity: 0;
+		    border:none;
+		}
+		.IMG{
+			width:100px;
+			height:150px;
+			display:inline-block;
+		}
+		.big{
+			position:fixed;
+			left:50%;
+			right:50%;
+			top:50%;
+			bottom:50%;
+			width:100%;
+			height:100%;
+		}
+		
+	</style>
+	<script type="text/javascript">
+	
+	   	var errorMsg = "服务器错误!";
+	   	var maxFileSizeMsg = "图片太大，请上传10M以内的照片!";
+	 
+	   	var allInfoToLou = null;
+	   	var areaInfoToBack = null;
+	   	
+		var orderTypeChildTwoList=null;
+		
+		
+		// Check string not empty
+		function isEmptyStr(s)
+		{
+		    return ((s==null) || ($.trim(s).length == 0));
+		}
+
+
+		//根据选择的值去广播信息索引
+	 	function showBroadcast(){
+	             var queTypeFather=$("#queTypeFather").val();//故障线路类型
+	             var queTypeName=$("#queTypeName").val();//故障类型
+	             var areaServer=$("#areaServer").val();//服务区域
+	             var location=$("#location").val();//服务楼栋
+	             var floors=$("#floors").val();//服务楼层
+	       /*       if(isEmptyStr(queTypeFather)){
+	            	 popTipShow.alert('提示','请选择故障路线类型！', ['知道了'],
+		         				function(e){
+		         				  //callback 处理按钮事件		  
+		         				  var button = $(e.target).attr('class');
+		         				  if(button == 'ok'){
+		         					//按下确定按钮执行的操作
+		         					//todo ....
+		         					this.hide();
+		         				  }	
+		         					$("#queTypeFather").focus();
+		         				  closeSpin();  //关闭转圈
+		         				}
+		         			);
+	            	 return false;
+	             } */
+	          
+	             if(isEmptyStr(queTypeFather) || isEmptyStr(queTypeName) ||isEmptyStr(areaServer) ||isEmptyStr(location)|| isEmptyStr(floors)){
+	            	 $("#btNext").hide();
+	                return false;
+	             }else{
+	            		 $("#btNext").show();
+	            		searchOnBroadcast(queTypeFather,queTypeName,areaServer,location,floors);
+	            		//$("#broadcast").empty();
+	            		//$("#broadcast").append("<p>"+floors+"</p>");
+	            		
+	             }
+	             
+			
+			
+		} 
+		
+		//关联广播功能查询
+/* 	  	   function searchOnBroadcast(queTypeFather,queTypeName,areaServer,location,floors) {
+			loadSpin("#wrap"); //转圈
+			//var jsonParam = jQuery.param({ "queTypeFather":queTypeFather,"queTypeName":queTypeName,"areaServer":areaServer,"location":location,"floors":floors});
+	     	$.ajax({
+				url :  '../broadcast/search',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: jsonParam,
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		         success : function(jsonObj) {  
+		        	 alert("sucess");
+		         	 if(jsonObj != null){
+		        		 var html="&nbsp;";
+		        		 for(int i=0;i<jsonObj.length;i++){
+		        			 html+="<p>"+jsonObj[i].content+"</p>";
+		        		 }
+		        		$("#broadcast").empty();
+		            	$("#broadcast").append(html);
+		             }else{
+		            	closeSpin();
+		            } 
+		        	
+		        }  
+			});  
+			closeSpin();
+	    }   */
+	    
+	     function searchOnBroadcast(queTypeFather,queTypeName,areaServer,location,floors) {
+	    	 loadSpin("#wrap"); //转圈
+	    	 var jsonParam = jQuery.param({ "queTypeFather":queTypeFather,"queTypeName":queTypeName,"areaServer":areaServer,"location":location,"floors":floors});
+	    	   	$.ajax({  
+	        		url :'../broadcast/search',
+	                type:"POST",  
+	                async: false,  
+	                data: jsonParam,
+	                dataType: "json",  
+	                cache: false,  
+	              success: function (jsonObj) {
+			        	 	 var html="&nbsp;";
+			        	 	// var result=JSON.parse(jsonObj);
+			        		 for(var i=0;i<jsonObj.length;i++){
+			        			 html+="<p>"+jsonObj[i].content+"</p>";
+			        		 }
+			        	 	$("#broadcast").empty();
+			            	$("#broadcast").append(html);  
+	                } 
+	            });
+	    	//alert(queTypeFather+" "+queTypeName+" "+areaServer+" "+location+" "+floors);
+	    	closeSpin();
+	    }  
+		
+		//改变问题类型的值
+		function setChange(parentValue){
+			var info = '<option value= "">请选择故障的类型'+'</option>';
+			for(var i=0;i<orderTypeChildTwoList.length;i++){ 
+				if(parentValue==orderTypeChildTwoList[i].pid){
+					info +="<option value="+orderTypeChildTwoList[i].uniqueID+">"+orderTypeChildTwoList[i].typeName+"</option>";
+				}
+				
+			}
+			
+			$("#queTypeName").html(info);
+			showBroadcast();
+		}
+		
+		//改变区域的值
+		function changeToArea(areaValue){
+
+			var areaValue = $("#areaServer").val();
+			var infoToLouOne = null;
+			var info = '<option value= "">请选择楼栋'+'</option>';
+			for(var i=0;i<allInfoToLou.length;i++){ 
+				if(areaValue==allInfoToLou[i].pid){
+					info +="<option value="+allInfoToLou[i].dictID+">"+allInfoToLou[i].dictName+"</option>";
+				}
+				
+			}
+			
+			$("#location").html(info);
+
+			showBroadcast();
+		}
+	
+	   	
+	    //连接
+	    function connect() {
+			loadSpin("#wrap"); //转圈
+	    	
+	    	$.ajax({
+				url :  '../WebRequest',  
+		    	type : 'POST',  
+		    	dataType : 'json', 
+		    	data: {type: 'OrderApplyDetail'},
+		    	error : function() {
+		    		closeSpin();
+		           // alert(errorMsg);
+		        },  
+		        success : function(jsonObj) {  
+		        	 if(jsonObj != null){
+		        		initMenu(jsonObj.roleflag);
+		        		if (jsonObj.type == "OrderApplyDetail" && jsonObj.value == "-1"){
+							goLogin();
+						}else
+		            	if(jsonObj.type == "OrderApplyDetail" && jsonObj.value == "1"){
+		            		showWorkOrder(jsonObj.content,eval(jsonObj.jstoArea.buildingListToArea),eval(jsonObj.jsonOrderTypeFather.orderTypeFatherList),eval(jsonObj.jsonOrderTypeChild.orderTypeChildList));
+		            	}else{
+							closeSpin();  //关闭转圈
+						}	
+		            }else{
+		            	closeSpin();
+		            }
+		        }  
+			});
+			closeSpin();
+	    }
+	    function goLogin(){
+	    	top.location.href='/cugItsm/html/index.jsp';
+	    }
+		
+		
+		//明细
+		function showWorkOrder(content,jstoArea,orderTypeFatherList,orderTypeChildList){
+			allInfoToLou = content.locations;//赋值给全局变量
+			orderTypeChildTwoList = orderTypeChildList;//赋值给全局变量
+			$("#contentDiv").get(0).innerHTML = "";
+			var htmlTmp = "";
+			htmlTmp += '<form   method="post" id="workOrderAddForm" action="${ctx}/workorderInput/add" enctype="multipart/form-data">';
+    		htmlTmp += '<table class="table_data">';
+    		htmlTmp += '<tr style="background-image: url(../style/images/line_1.png);  -moz-background-size:100% 100%; background-size:100% 100%; height:40px;color:#00BFFF;"><td colspan="2" class="table_head">故障申报服务工单申请</td></tr>';
+    		htmlTmp += '<tr><td colspan="2" class="tickno_head"><img style="vertical-align:middle; max-width:100%; width: 30px; padding-left: 10px;  padding-right: 15px;'
+        	htmlTmp += 'padding-top: 8px; padding-bottom: 8px;  margin-left: 0px;" src="../style/images/icon_order.png">服务单号 <span id="ticketNo">'+ content.ticketNo + '</span></td></tr>';
+        	htmlTmp += '<tr><td class="trackTD">请选择故障的线路类型</td><td class="trackTDVal">';
+        	htmlTmp += '<select id="queTypeFather" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" name="queTypeFather" onchange="setChange(this.value)">';
+        	htmlTmp +='<option value= "">请选择故障的线路类型'+'</option>';
+        	for(i = 0;i < orderTypeFatherList.length;i++){
+				htmlTmp += '<option value= "'+orderTypeFatherList[i].uniqueID+'">'+orderTypeFatherList[i].typeName+'</option>';
+			}
+			htmlTmp += '</select>&nbsp;&nbsp;</td></tr>';
+			
+        	htmlTmp += '<tr><td class="trackTD">请选择故障的类型</td><td class="trackTDVal">';
+        	htmlTmp += '<select id="queTypeName" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" name="queTypeName" onchange="showBroadcast()">';
+        	htmlTmp +='<option value= "">请选择故障的类型'+'</option>';
+        	for(i = 0;i < orderTypeChildList.length;i++){
+ 				if(orderTypeChildList[i].pid=="1"){
+ 					htmlTmp += '<option class="location_op" value= "'+orderTypeChildList[i].uniqueID+'">'+orderTypeChildList[i].typeName+'</option>';	
+ 				}
+			} 
+			htmlTmp += '</select>&nbsp;&nbsp;</td></tr>';
+			htmlTmp += '<tr><td class="trackTD">服务地点</td><td class="trackTDVal">';
+			htmlTmp += '<select id="areaServer" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" name="area" onchange="changeToArea(this.value)">';
+			htmlTmp +='<option value= "">请选择区域'+'</option>';
+			for(i = 0;i < jstoArea.length;i++){
+				htmlTmp += '<option class="location_op"  value= "'+jstoArea[i].dictID+'">'+jstoArea[i].dictName+'</option>';
+			}
+			htmlTmp += '</select>&nbsp;&nbsp;';
+			htmlTmp += '<select id = "location" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white" onchange="showBroadcast()">';
+			htmlTmp +='<option value= "">请选择楼栋'+'</option>';
+ 			for(i = 0;i < content.locations.length;i++){
+ 				if(content.locations[i].pid=="1"){
+ 					htmlTmp += '<option class="location_op" value= "'+content.locations[i].dictID+'">'+content.locations[i].dictName+'</option>';	
+ 				}
+			} 
+			htmlTmp += '</select><select id = "floors" style="border:1px solid gray;border-radius:3px;height:30px;margin-top:3px;box-sizing:border-box;background:white" onchange="showBroadcast()">';
+			htmlTmp +='<option value= "">请选择楼层'+'</option>';
+			var floors = content.topFloor*1;
+			for(i = 1;i <= floors;i++){
+				htmlTmp += '<option value= "'+i+'">'+i+'楼</option>';
+			} 
+			htmlTmp += '</select>';
+			htmlTmp += '</td></tr>';
+			htmlTmp += '<tr><td class="trackTD">详细地址</td><td class="trackTDVal"><input type="text" name="room" id="room" maxlength="100" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/><span style="color:RED;">*</span></td></tr>';
+			
+			htmlTmp+='<div class="row" > <div  class="col-sm-12"> <div class="col-sm-12 doc_node"> <div class="media"><div class="media-body"><div id="content" style="margin-left: 4px;" class="pull-left"></div></div></div></div> </div></div>'
+			
+			htmlTmp += '<tr><td class="trackTD" ></td><td class="trackBtn" colspan="1">'; 
+   			htmlTmp += '<button type="button" class="button blue" id="btNext" onclick="next()">下一步</button>';
+   		 	//var shtmlTmp ="";
+   			//shtmlTmp += '<button type="button" class="button blue" onclick="send('+content.ticketNo +')">提交</button>';
+   			//alert("shtmlTmp---" +shtmlTmp); 
+   			//htmlTmp += '<button type="button" class="button blue" onclick="clearVal()">返回</button>';
+   			htmlTmp += '<button type="button" class="button blue" onclick="back()">返回</button>';
+   			
+   			htmlTmp += '</td></tr>';
+   			
+   		 /* 	htmlTmp +='<tr ><td class="trackTD">关键字</td><td class="trackTDVal"><input type="text" name="word" id="word" maxlength="100" style="border:1px solid gray;border-radius:3px;height:30px;padding-left:3px;box-sizing:border-box;background:white"/>';
+   			htmlTmp += '<button class="button blue" type="button" onclick="searchByWord()">搜索</button></td></tr>'; */
+   			
+   			htmlTmp += '</table>';
+   			htmlTmp +='<div id="broadcast"> </div>';
+   			htmlTmp += '</form>';
+    		$("#contentDiv").get(0).innerHTML = htmlTmp;
+	    	
+    		$("#btNext").hide();
+	    	closeSpin();
+		}
+		
+		
+		//下一步
+		function next(){
+		    loadSpin("#wrap"); //转圈
+		    var room=$("#room").val();
+		    if(isEmptyStr(room)){
+		      	 popTipShow.alert('提示','请输入详细地址！', ['知道了'],
+	         				function(e){
+	         				  //callback 处理按钮事件		  
+	         				  var button = $(e.target).attr('class');
+	         				  if(button == 'ok'){
+	         					//按下确定按钮执行的操作
+	         					//todo ....
+	         					this.hide();
+	         				  }	
+	         					$("#room").focus();
+	         				  closeSpin();  //关闭转圈
+	         				}
+	         			);
+         	 return false;
+		    }
+		 	window.location.href = "guideStyleApply3.html";
+			htmlTmp = "";
+			closeSpin(); 
+		}
+		
+		//返回
+		function back(){
+		/* 	loadSpin("#wrap"); //转圈
+			window.location.href = "workorderTrack.html";
+			htmlTmp = "";
+			closeSpin(); */
+		}
+		
+		
+		
+ 		
+		
+
+		
+		
+		window.onload = function (){
+		
+			connect();  //页面初始化方法
+			
+			
+		};
+		
+		function changeMenuClass(index){
+			
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+
+			$("#subMenuImg1").attr('src','../style/images/menu1.png');
+			$("#subMenuImg2").attr('src','../style/images/menu2.png'); 
+			$("#subMenuImg3").attr('src','../style/images/menu3.png'); 
+			$("#subMenuImg4").attr('src','../style/images/menu4.png'); 
+			$("#subMenuImg"+index).attr('src','../style/images/menu' + index + '_on.png'); 
+			
+			
+			var htmlTmp = "";
+			if(index == 1){
+				loadSpin("#wrap"); //转圈
+				//window.location.href = "workOrderApply.html";
+				window.location.href = "newWorkOrderApply.html";
+				closeSpin();
+			}else if(index == 2){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "workorderTrack.html";
+				closeSpin();
+			}else if(index == 3){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "serviceValuation.html";
+				closeSpin();
+			}else if(index == 4){
+				loadSpin("#wrap"); //转圈
+				window.location.href='history.html?history=U';
+				closeSpin();
+			}else if(index == 5){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "history.html?history=U";
+				htmlTmp = "";
+				closeSpin();
+			}else if(index == 6){
+				loadSpin("#wrap"); //转圈
+				window.location.href = "grabTkt.html";
+				htmlTmp = "";
+				closeSpin();
+			}
+			
+			$("#contentDiv").get(0).innerHTML = htmlTmp;
+
+		}
+		
+		function changeMenuMore(index){
+			$(".subMenuDiv").removeClass("subMenuDivOn");
+			$("#subMenuDiv"+index).addClass("subMenuDivOn");
+			if(index == 4){
+				$("#subMenuDiv_div").slideToggle(300);
+				$("#subMenuDiv"+index).removeClass("subMenuDivOn");
+			}
+		}
+		
+		function initMenu(flag){ 
+			if(flag == "C"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").hide();
+			}
+			else if(flag == "Y"){
+				$("#menuDiv").hide();
+				$("#menuDiv2").show();
+			}else{
+				$("#menuDiv").show();
+				$("#menuDiv2").hide();
+			}
+		}
+		
+		
+	</script>
+	
+	</head>
+	
+	<body>
+	    	<div id="contentDiv" class="contentDiv">
+		    	
+	    	</div>
+	    	
+	    	
+	    	<div id="menuDiv" class="menuDiv" hidden="true">
+		    	<div id="subMenuDiv1" class="subMenuDiv" onclick="changeMenuClass(1)">
+		    		<img id="subMenuImg1"  src="../style/images/menu1.png"><span style="vertical-align:middle;margin-top:10px;">申报</span>
+	    		</div>
+	    		<div id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><span style="vertical-align:middle;margin-top:10px;">跟踪</span>
+	    		</div>
+	    		<div id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3" src="../style/images/menu3.png"><span style="vertical-align:middle;margin-top:10px;">评价</span>
+	    		</div>
+	    		<div id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuClass(4)">
+		    		<img id="subMenuImg4"  src="../style/images/menu4.png"><span style="vertical-align:middle;margin-top:10px;">历史</span>
+	    		</div>
+	    	</div>
+		    
+			<div id="menuDiv2" class="menuDiv" hidden="true">
+	    		<ul style="width: 100%">
+		    	<li id="subMenuDiv1" class="subMenuDiv" onclick="changeMenuClass(1)">
+		    		<img id="subMenuImg1"  src="../style/images/menu1.png"><span style="vertical-align:middle;margin-top:10px;">申报</span>
+	    		</li>
+	    		<li id="subMenuDiv2" class="subMenuDiv" onclick="changeMenuClass(2)">
+		    		<img id="subMenuImg2"  src="../style/images/menu2.png"><span style="vertical-align:middle;margin-top:10px;">跟踪</span>
+	    		</li>
+	    		<li id="subMenuDiv3" class="subMenuDiv" onclick="changeMenuClass(3)">
+		    		<img id="subMenuImg3"  src="../style/images/menu3.png"><span style="vertical-align:middle;margin-top:10px;">评价</span>
+	    		</li>
+	    		
+	    		<li id="subMenuDiv4" class="subMenuDiv" onclick="changeMenuMore(4)">
+	    			 <div class = "subMenuDiv_div" id = "subMenuDiv_div" hidden="true">
+		    			<ul id = "subMenuDiv_ul">
+		    			<li class="subMenuLi" onclick="changeMenuClass(5)"><img id="subMenuImg4_1"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;margin-top:10px;">历史</span>
+	    				</li>
+	    				<li class="subMenuLi" onclick="changeMenuClass(6)"><img id="subMenuImg4_2"  src="../style/images/menu4.png"><br><span style="vertical-align:middle;margin-top:10px;">切换角色</span>
+	    				</li>
+	    				</ul>
+	    			</div>
+	    			<img id="subMenuImg4" src="../style/images/menu4.png"><span style="vertical-align:middle;margin-top:10px;">更多</span>
+	    		</li>
+	    		</ul>
+	    	</div>
+	    
+	</body>
+	<style type="text/css">
+	#menuDiv ul li,#menuDiv2 ul li{  float:left; list-style-type:none;}
+	#subMenuDiv_ul{ margin-top:-165%; width:100%;position: relative} 	
+	
+.button{
+width: 70px;
+line-height: 30px;
+text-align: center;
+font-weight: bold;
+color: #fff;
+margin:0 10px 10px 0;
+position: relative;
+overflow: hidden;
+}
+.button:nth-child(6n){
+margin-right: 0;
+}
+.pic{
+width:40px;
+height:30px;
+border:none;
+background-image:url(../style/images/icon_camera.png);
+background-size:100% 100%;
+background-color:transparent;
+}
+
+.button.blue{
+border:1px solid #32CD32;
+box-shadow: 0 1px 2px #32CD32 inset,0 -1px 0 #32CD32 inset,0 -2px 3px #32CD32 inset;
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+border:none;
+border-radius:4px;
+}
+
+.button.grey {
+	background:#B7BEC2;
+	border:none;
+}
+
+
+.blue:hover{
+background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+background: -moz-linear-gradient(top,#32CD32,#32CD32);
+background: linear-gradient(top,#32CD32,#32CD32);
+}
+
+.blue:active{
+top:1px;
+box-shadow: 0 1px 3px #3CB371 inset,0 3px 0 #32CD32;
+background: -webkit-linear-gradient(top,#3CB371,#3CB371);
+background: -moz-linear-gradient(top,#3CB371,#3CB371);
+background: linear-gradient(top,#3CB371,#3CB371);
+}
+
+.blue.side:hover:after{
+background:-webkit-linear-gradient(right,#32CD32,#3CB371 60%);
+background:-moz-linear-gradient(right,#32CD32,#3CB371 60%);
+background:linear-gradient(right,#32CD32,#3CB371 60%); 
+}
+
+.blue.side:active:after{
+box-shadow:-1px 0 1px #114566 inset;
+background:-webkit-linear-gradient(right,#3CB371,#3CB371 60%);
+background:-moz-linear-gradient(right,#3CB371,#3CB371 60%);
+background:linear-gradient(right,#3CB371,#3CB371 60%); 
+}
+
+.blue.rarrow:hover:after,
+	.blue.larrow:hover:after{
+background:-webkit-linear-gradient(top left,#70bfef,#4097ce);
+background:-moz-linear-gradient(top left,#70bfef,#4097ce);
+background:linear-gradient(top left,#70bfef,#4097ce);
+}
+
+.blue.rarrow:active:after,
+	.blue.larrow:active:after{
+background:-webkit-linear-gradient(top left,#1a71a8,#1976b1);
+background:-moz-linear-gradient(top left,#1a71a8,#1976b1);
+background:linear-gradient(top left,#1a71a8,#1976b1);
+}
+
+.blue.rarrow:active:after{
+box-shadow: 0 1px 0 #114566 inset,-1px 0 0 #114566 inset;
+}
+.blue.larrow:active:after{
+box-shadow: 0 -1px 0 #114566 inset,1px 0 0 #114566 inset;
+}
+	</style>
+</html>

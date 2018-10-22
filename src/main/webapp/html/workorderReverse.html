@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	
+	<meta charset="UTF-8">
+	
+	<title>工单跟踪</title>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	
+	<meta http-equiv="Expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-control" content="no-cache">
+	<meta http-equiv="Cache" content="no-cache">
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/spin.min.js" ></script>  
+	<script src="../js/mobile.js" ></script>
+	
+	<link rel="stylesheet" href="../style/css/common.css" />	 
+	<script src="../js/alertPopShow.js" ></script>
+	<script src="http://api.map.baidu.com/api?v=2.0&ak=zRLeQBFG9tHyef5FnjMVF92LWidtKcPh" type="text/javascript"></script>
+    <script src="http://api.map.baidu.com/library/DrawingManager/1.4/src/DrawingManager_min.js&quot" type="text/javascript" ></script>
+    <script src="http://api.map.baidu.com/library/SearchInfoWindow/1.4/src/SearchInfoWindow_min.js&quot" type="text/javascript" ></script>
+    <script src="../js/giveLngAndLat.js" ></script>  
+	
+	<script type="text/javascript">
+	//var url=location.search;
+	var ticketNo = $.getUrlParam('ticketNo'); 
+	//alert("ticketNo---" +ticketNo);
+	
+	//连接
+	function connect() {
+		loadSpin("#wrap"); //转圈
+		//ajax请求示例，调用WebRequestController.java
+		$.ajax({
+			url :  '../Track',  
+	    	type : 'POST',  
+	    	dataType : 'json', 
+	    	data: {id: "1", type: 'reverseReason'},
+	    	error : function() {
+	    		closeSpin();
+	            //alert(errorMsg);
+	            
+	            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        				}
+        			);
+	            
+	        },  
+	        success : function(jsonObj) {  
+// 	        	alert("Response = " + JSON.stringify(jsonObj));
+	            if(jsonObj != null){
+	            	if(jsonObj.type == "reverseReason" && jsonObj.value == "-1"){
+	            		goLogin();
+	            	}else if(jsonObj.type == "reverseReason" && jsonObj.value == "1"){
+	            		showWorkList(jsonObj.content);
+// 						alert("success");
+	            	}else{
+						closeSpin();  //关闭转圈
+					}	
+	            }else{
+	            	closeSpin();
+	            }
+	        }  
+		});
+		
+	}
+    function goLogin(){
+    	top.location.href='/cugItsm/html/index.jsp';
+    }
+	window.onload = function (){
+		 
+		connect();  //页面初始化方法
+		
+	};
+
+	function showWorkList(content){
+		$("#contentDiv").get(0).innerHTML = "";
+		var htmlTmp = "";
+		htmlTmp += '<table class="selectTab"><tr><td width="24%;"><h4>撤销理由:</h4></td>';
+		htmlTmp += '<td><select class="trackSelect" id="trackSelect">';
+		for(var i=0;i<content.length;i++){
+			htmlTmp += '<option value="'+content[i].dictID+'">'+content[i].dictName+'</option>';
+		}
+		htmlTmp += '</select></td>';
+		$("#contentDiv").get(0).innerHTML = htmlTmp;
+		
+	
+		closeSpin();
+	}
+	
+	function submitReverse(){
+		var reverseReason = $("#trackSelect").val();
+		loadSpin("#wrap"); //转圈
+		//ajax请求示例，调用WebRequestController.java
+		$.ajax({
+			url :  '../Track',  
+	    	type : 'POST',  
+	    	dataType : 'json', 
+	    	data: {id: "1", type: 'reverseSubmit', ticketNo: ticketNo,sysDict: reverseReason},
+	    	error : function() {
+	    		closeSpin();
+	            //alert(errorMsg);
+	            
+	            popTipShow.alert('提示 ',errorMsg, ['知道了'],
+        				function(e){
+        				  //callback 处理按钮事件		  
+        				  var button = $(e.target).attr('class');
+        				  if(button == 'ok'){
+        					//按下确定按钮执行的操作
+        					//todo ....
+        					this.hide();
+        				  }	
+        				}
+        			);
+	            
+	        },  
+	        success : function(jsonObj) {  
+// 	        	alert("Response = " + JSON.stringify(jsonObj));
+	            if(jsonObj != null){
+	            	if(jsonObj.type == "reverseSubmit" && jsonObj.value == "-1"){
+	            		goLogin();
+	            	}else if(jsonObj.type == "reverseSubmit" && jsonObj.value == "1"){
+	            		//alert("撤销成功");
+	            		 sendMessage();
+	            		 popTipShow.alert('提示 ','撤销成功', ['知道了'],
+	 	        				function(e){
+	 	        				  //callback 处理按钮事件		  
+	 	        				  var button = $(e.target).attr('class');
+	 	        				  if(button == 'ok'){
+	 	        					//按下确定按钮执行的操作
+	 	        					//todo ....
+	 	        					this.hide();
+	 	        				  }	
+	 	        				 submitBack();
+	 	        				}
+	 	        			);
+	            		
+	            		
+// 	            		window.location.href="workorderTrack.html";
+	            	}else{
+						closeSpin();  //关闭转圈
+					}	
+	            }else{
+	            	closeSpin();
+	            }
+	        }  
+		});
+	}
+	function submitBack(){
+		window.location.href="workorderTrack.html";
+	}
+	
+	//发送通知
+	function sendMessage(){
+		loadSpin("#wrap"); //转圈
+     	$.ajax({
+			url :  '../SendMessage',  
+	    	type : 'POST',  
+	    	dataType : 'json', 
+	    	data: {type:'28',ticketNo: ticketNo},
+	    	error : function() {
+	    		closeSpin();
+	           // alert(errorMsg);
+	        },  
+	        success : function(jsonObj) {  
+	        	closeSpin();
+	        }
+	 })
+	}
+	
+	$(function(){
+		$(".trankBtn2").find("a").find("font").css({
+			color:"#fff"
+			
+		})
+		
+	})
+	</script>
+</head> 
+<style>
+	body {
+		
+		background:rgba(0,0,0,.4) !important;
+	}
+	
+	
+</style>
+<body>
+<div data-role="dialog" id="page1">
+		<div data-role="content" data-theme="c">
+			 <div data-role="content" role="main">
+		      	<div data-role="fieldcontain" id="contentDiv">
+		      		
+<!-- 		        	<select name="select-choice" id="select-choice-a" data-native-menu="false" data-theme="c"> -->
+		          		
+<!-- 		        	</select> -->
+		      	</div>
+		        <table style="width: 80%;float: center;height: 60px;">
+		        	<tr>
+		        		<td class="trankTD"><div class="trankBtn" onclick="submitReverse()"><a ><font style="color: #FFF;margin-top: 20px;">确定撤销</font></a></div></td>
+		        		<td class="trankTD"><div class="trankBtn2" onclick="submitBack()"><a><font style="color: #FFF;">关闭</font></a></div></td>
+		        	</tr>
+		        </table>	
+	   	 	</div>
+		</div>
+	</div>
+ 
+</body>
+<link rel="stylesheet" href="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.css" />
+	<script src="../js/jquery/1.7.1/jquery-1.7.1.min.js"></script>
+	<script src="../js/jquery/jqm1.3.0/jquery.mobile-1.3.0.min.js"></script>
+    
+    <script src="../js/spin.min.js" ></script>  
+    <script src="../js/mobile.js" ></script>
+    <link rel="stylesheet" href="../style/css/mobile.css" />
+    <link rel="stylesheet" href="../style/css/main.css" />
+<style type="text/css">
+	.trankBtn{
+		margin: 0;
+		
+		border: 0;
+		float: center;
+		background:  #3CB371;
+		width: 70px;
+		height: 30px;
+		line-height:30px;
+		border-radius:4px;
+		margin-left: 40px;
+		margin-top:10px;
+		
+		box-shadow: 0 1px 2px #32CD32 inset, 0 -1px 0 #32CD32 inset, 0 -2px 3px #32CD32 inset;
+    	background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+	}
+	
+	.trankBtn2{
+		margin: 0;
+		
+		border: 0;
+		float: center;
+		
+		width: 70px;
+		height: 30px;
+		line-height:30px;
+		border-radius:4px;
+		margin-top:10px;
+		box-shadow: 0 1px 2px #32CD32 inset, 0 -1px 0 #32CD32 inset, 0 -2px 3px #32CD32 inset;
+    	background: -webkit-linear-gradient(top,#32CD32,#32CD32);
+		
+	}
+	
+	.trankTD{
+		padding: 0 0 0 8%;
+		
+	}
+	.trackSelect{
+		width: 100%;
+		height: 30px;
+		align:right;
+	}
+	.selectTab{
+		width: 100%;
+	}
+	.trankBtn:hover{
+		background: #43CD80;
+	}
+	.trankBtn2:hover{
+		background: #B5B5B5;
+	}
+	.ui-dialog-contain {
+		padding-top:206px;
+	}
+
+	.ui-content {
+		padding:0px;
+	}
+	
+	.ui-body-c .ui-link {
+		font-weight:400;
+		color:#fff;
+	
+	} 
+	.ui-link {
+		color:#fff;
+	}
+	#trackSelect {
+		border-radius:4px;
+	}
+	
+	.ui-dialog-contain {
+		width:85%;
+	} 
+	
+	.ui-overlay-shadow {
+		-webkit-box-shadow: none;
+    	box-shadow: none;
+	}
+	
+	.ui-dialog-contain > .ui-content {
+		padding:3px 15px;
+	
+	}
+	
+	.ui-body-a, .ui-overlay-a {
+		text-shadow: none;
+	}
+	.trankBtn,.trankBtn2{
+    box-shadow:none;
+    background:rgba(39,54,80,0.8);
+    border:0.1rem solid rgba(255,255,255,0.6);
+	}
+	
+</style>
+</html>

@@ -1,0 +1,10 @@
+ .wrapper {
+            width:100%;/*高度不用设置*/
+            word-wrap: break-word;
+            word-break: normal;
+           /* background-color:#fff;*/
+           margin-top: 10px;
+        }
+   .wrapper .panel-body{
+            height: auto !important;
+     }
