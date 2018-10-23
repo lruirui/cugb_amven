@@ -25,11 +25,11 @@
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
         <property name="configLocation" value="classpath:mybatis/SqlMapConfig.xml"></property>
         <!--配置mapper.xml文件位置，当mapper文件和接口不在同一文件夹的时候需要配置-->
-        <!--<property name="mapperLocations" value="classpath:mybatis/mapper/**/*.xml"></property>-->
+        <property name="mapperLocations" value="classpath:mybatis/mapper/**/*.xml"></property>
         <property name="dataSource" ref="dataSource"></property>
     </bean>
     <!-- 配置扫描包，加载mapper代理对象 -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.taotao.mapper"></property>
+        <property name="basePackage" value="com.lsy.dao"></property>
     </bean>
 </beans>

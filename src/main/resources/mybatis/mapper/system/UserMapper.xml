@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lsy.dao.system.user.UserDao">
+    <sql id="findUserSql">
+        <if test="empName!=null and empName !=''">
+            AND empName LIKE '%${empName}%'
+        </if>
+        <if test="stuEmpno!=null and stuEmpno!=''">
+            AND stuEmpno = #{stuEmpno}
+        </if>
+    </sql>
+    <select id="getUsers"  resultType="com.lsy.entity.system.User">
+        SELECT * from user_table
+        <where>
+            <include refid="findUserSql"></include>
+        </where>
+        order by #{order}
+        limit #{begin},#{rows}
+    </select>
+    <select id="getCount" resultType="integer">
+        SELECT COUNT(*) FROM user_table
+        <where>
+            <include refid="findUserSql"></include>
+        </where>
+    </select>
+    <insert id="addUser">
+        INSERT into user_table(stuEmpno,empName,passWord,webchat,email,tel,isEnable) VALUES
+        (#{stuEmpno},#{empName},#{passWord},#{webchat},#{email},#{tel},#{isEnable})
+    </insert>
+</mapper>

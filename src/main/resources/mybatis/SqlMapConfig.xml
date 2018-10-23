@@ -10,4 +10,7 @@
             <!--<property name="dialect" value="mysql"/>-->
         <!--</plugin>-->
     <!--</plugins>-->
+    <typeAliases>
+        <package name="com.lsy.entity"></package>
+    </typeAliases>
 </configuration>

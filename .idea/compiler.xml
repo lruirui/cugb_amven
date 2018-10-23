@@ -6,8 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="cugb" />
         <module name="cugb_amven" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="cugb" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

@@ -27,10 +27,10 @@
 
 <!-- [自定义验证规则] -->
 <script type="text/javascript" src="${ctx}/js/messages_cn.js" ></script>
-<script type="text/javascript" src="${ctx}/js/index.js" ></script>
+<%--<script type="text/javascript" src="${ctx}/js/index.js" ></script>--%>
 
 <!-- [定制JS] -->
-<script type="text/javascript" src="${ctx}/jslib/cugb.js" charset="utf-8"></script>
+<%--<script type="text/javascript" src="${ctx}/jslib/cugb.js" charset="utf-8"></script>--%>
 
 <!-- [扩展cugItsm样式] -->
 <!-- 通用样式 -->

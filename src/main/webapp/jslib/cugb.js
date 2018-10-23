@@ -26,10 +26,12 @@
          * @param {Object} jq  
          * @param {Object} params  
          */  
-        hidden: function(jq, params) {   
+        hidden: function(jq, params) {
+            console.log(jq===this);
             return jq.each(function() {
+                console.log( $.data(this, 'layout'));
                 var opts = $.data(this, 'layout').options;
-                var panels = $.data(this, 'layout').panels;   
+                var panels = $.data(this, 'layout').panels;
                 if(!opts.regionState){   
                     opts.regionState = {};   
                 }   
@@ -68,8 +70,10 @@
          * @param {Object} jq  
          * @param {Object} params  
          */  
-        show: function(jq, params) {   
-            return jq.each(function() {   
+        show: function(jq, params) {
+            console.log(params);
+            return jq.each(function() {
+                console.log( $.data(this, 'layout'));
                 var opts = $.data(this, 'layout').options;   
                 var panels = $.data(this, 'layout').panels;   
                 var region = params;   
