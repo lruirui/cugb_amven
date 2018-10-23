@@ -5,8 +5,10 @@ import com.lsy.entity.system.User;
 import com.lsy.service.system.IUserService;
 import com.lsy.utils.Grid;
 import com.lsy.utils.PageFilter;
+import com.lsy.utils.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -52,8 +54,33 @@ public class UserController {
      * */
     @RequestMapping("/addUser")
     @ResponseBody
-    public Object addUser(User user) {
-        userService.addUser(user);
-        return null;
+    public Result addUser(User user) {
+        return userService.addUser(user);
+    }
+
+    /**
+     * 返回到修改页面
+     * */
+    @RequestMapping("/editUser/{stuEmpno}")
+    public String editUser(@PathVariable String stuEmpno, Model map){
+        User user = userService.getUserByStuEmpno(stuEmpno);
+        map.addAttribute(user);
+        return prifex+"/UserEdit";
+    }
+    /**
+     * 修改用户
+     * */
+    @RequestMapping("/editUser")
+    @ResponseBody
+    public Result editUser(User user){
+        return userService.editUser(user);
+    }
+    /**
+     * 删除用户
+     * */
+    @RequestMapping("/deleteUser")
+    @ResponseBody
+    public Result deleteUser(String stuEmpno){
+        return userService.deleteUser(stuEmpno);
     }
 }

@@ -164,11 +164,13 @@
             parent.$.messager.confirm('询问', '您是否要删除当前用户资料吗？', function(b) {
                 if (b) {
                     progressLoad();
-                    $.post('${ctx}/user/delete', {
+                    $.post('${ctx}/system/user/deleteUser', {
                         stuEmpno : stuEmpno
                     }, function(result) {
-                        if (result.success) {
-                            parent.$.messager.alert('提示', result.msg, 'info');
+                        console.log(result);
+                        alert(result.result);
+                        if (result.result=="success") {
+                            parent.$.messager.alert('提示', result.message, 'info');
                             dataGrid.datagrid('reload');
                         }
                         progressClose();
@@ -188,7 +190,7 @@
                 title : '普通用户信息修改',
                 width : 600,
                 height : 325,
-                href : '${ctx}/user/editPage?stuEmpno=' + stuEmpno,
+                href : '${ctx}/system/user/editUser/'+ stuEmpno,
                 buttons : [ {
                     text : '修改',
                     handler : function() {

@@ -17,14 +17,51 @@
         order by #{order}
         limit #{begin},#{rows}
     </select>
-    <select id="getCount" resultType="integer">
+
+    <select id="getCount" resultType="java.lang.Integer">
         SELECT COUNT(*) FROM user_table
         <where>
             <include refid="findUserSql"></include>
         </where>
     </select>
+
+    <select id="getUserByEmpno" resultType="java.lang.Integer">
+        select count(*) from user_table where StuEmpno = #{stuempno}
+    </select>
+
     <insert id="addUser">
         INSERT into user_table(stuEmpno,empName,passWord,webchat,email,tel,isEnable) VALUES
         (#{stuEmpno},#{empName},#{passWord},#{webchat},#{email},#{tel},#{isEnable})
     </insert>
+    <select id="queryUserByStuEmpno" resultType="com.lsy.entity.system.User">
+        select * from user_table where StuEmpno = #{stuEmpno}
+    </select>
+    <update id="updateUser">
+        update user_table
+        <set>
+            <if test="empName!=null or empName !=''" >
+                EmpName = #{empName},
+            </if>
+            <if test="passWord!=null or passWord !=''" >
+                passWord = #{passWord},
+            </if>
+            <if test="webchat!=null or webchat !=''" >
+                webchat = #{webchat},
+            </if>
+            <if test="email!=null or email !=''" >
+                email = #{email},
+            </if>
+            <if test="tel!=null or tel !=''" >
+                tel = #{tel},
+            </if>
+            <if test="isEnable!=null or isEnable !=''" >
+                isEnable = #{isEnable},
+            </if>
+        </set>
+        where stuEmpno = #{stuEmpno}
+    </update>
+    <delete id="deleteUser">
+        delete from user_table where
+        StuEmpno = #{stuEmpno}
+    </delete>
 </mapper>

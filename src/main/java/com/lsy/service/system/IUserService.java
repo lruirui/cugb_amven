@@ -19,4 +19,10 @@ public interface IUserService {
     public Integer getCount(User user);
 
     public Result addUser(User user);
+
+    public User getUserByStuEmpno(String stuEmpno);
+
+    public Result editUser(User user);
+
+    public Result deleteUser(String stuEmpno);
 }

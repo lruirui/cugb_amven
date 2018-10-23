@@ -56,10 +56,37 @@ public class UserServiceImpl implements IUserService{
      * 判断账号是否存在
      * */
     public boolean checkEmpno(User user) {
-        Integer count = userDao.getCount(user);
+        Integer count = userDao.getUserByEmpno(user.getStuEmpno());
         if(count>0) {
             return true;
         }
         return false;
+    }
+    /**
+     * 根据id查询用户
+     * */
+    @Override
+    public User getUserByStuEmpno(String stuEmpno) {
+        return userDao.queryUserByStuEmpno(stuEmpno);
+    }
+    /**
+     * 修改用户
+     * */
+    @Override
+    public Result editUser(User user) {
+        Integer count = userDao.updateUser(user);
+        if(count>0) {
+           return Result.success("修改成功");
+        }
+        return Result.fail("修改失败");
+    }
+
+    @Override
+    public Result deleteUser(String stuEmpno) {
+        Integer count = userDao.deleteUser(stuEmpno);
+        if(count>0) {
+            return Result.success("删除成功");
+        }
+        return Result.fail("删除失败");
     }
 }

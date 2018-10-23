@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="cugb:war">
-    <output-path>$PROJECT_DIR$/target</output-path>
-    <root id="archive" name="cugb-1.0-SNAPSHOT.war">
-      <element id="artifact" artifact-name="cugb:war exploded" />
-    </root>
-  </artifact>
-</component>

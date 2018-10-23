@@ -24,6 +24,19 @@ public interface UserDao {
      * */
     public Integer getCount(PageFilter pageFilter);
 
+    /**
+     *根据ID查询用户
+     * */
+    public Integer getUserByEmpno(String stuEmpno);
+
+    /**
+     * 增加用户
+     * */
     Integer addUser(User user);
 
+    public User queryUserByStuEmpno(String stuEmpno);
+
+    public Integer updateUser(User user);
+
+    public Integer deleteUser(String stuEmpno);
 }

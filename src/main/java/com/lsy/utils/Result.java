@@ -41,6 +41,7 @@ public class Result {
     public static Result success(String message) {
         Result result = new Result();
         result.setResult("success");
+        result.setMessage(message);
         return result;
     }
     public static Result fail() {
@@ -51,6 +52,7 @@ public class Result {
     public static Result fail(String message) {
         Result result = new Result();
         result.setResult("fail");
+        result.setMessage(message);
         return result;
     }
 }
