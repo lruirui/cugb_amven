@@ -1,18 +1,14 @@
-package com.lsy.service.system.impl;
+package com.lsy.service.system.user.impl;
 
 import com.lsy.dao.system.user.UserDao;
 import com.lsy.entity.system.User;
-import com.lsy.service.system.IUserService;
-import com.lsy.utils.PageFilter;
+import com.lsy.service.system.user.IUserService;
 import com.lsy.utils.Result;
 import com.lsy.utils.TimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -83,6 +79,7 @@ public class UserServiceImpl implements IUserService{
 
     @Override
     public Result deleteUser(String stuEmpno) {
+        //todo 删除条件还没完成
         Integer count = userDao.deleteUser(stuEmpno);
         if(count>0) {
             return Result.success("删除成功");

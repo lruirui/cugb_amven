@@ -28,6 +28,10 @@ public class PageFilter implements java.io.Serializable {
 		return (page-1)*rows;
 	}
 
+	public void setBegin(int begin) {
+		this.begin = begin;
+	}
+
 	public int getPage() {
 		return page;
 	}

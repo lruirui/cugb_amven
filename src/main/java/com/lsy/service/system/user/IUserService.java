@@ -1,4 +1,4 @@
-package com.lsy.service.system;
+package com.lsy.service.system.user;
 
 import com.lsy.entity.system.User;
 import com.lsy.utils.PageFilter;

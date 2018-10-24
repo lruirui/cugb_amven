@@ -2,7 +2,7 @@ package com.lsy.controller.system.user;
 
 import com.lsy.dao.system.user.UserDao;
 import com.lsy.entity.system.User;
-import com.lsy.service.system.IUserService;
+import com.lsy.service.system.user.IUserService;
 import com.lsy.utils.Grid;
 import com.lsy.utils.PageFilter;
 import com.lsy.utils.Result;
@@ -27,8 +27,6 @@ public class UserController {
 
     @Autowired
     private IUserService userService;
-    @Autowired
-    private UserDao userDao;
 
     /**
      * 页面跳转
