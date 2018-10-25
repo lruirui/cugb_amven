@@ -4,6 +4,7 @@ import com.lsy.dao.system.dict.LocationDao;
 import com.lsy.entity.system.SysDict;
 import com.lsy.service.system.dict.ILocationService;
 import com.lsy.utils.Result;
+import com.lsy.utils.TimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +49,29 @@ public class LocationServiceImpl implements ILocationService{
      * */
     @Override
     public Result addLocation(SysDict sysDict) {
-        sysDict = initLocation(sysDict);
+        //todo 创建人设置
+        //判断增加的类型
+        String localType = sysDict.getLocalType();
+        if("father".equals(localType)) {
+            //新增父楼栋
+            return addFatherLocation(sysDict);
+        }
+            //新增子楼栋
+          return  addChildLocation(sysDict);
+
+
+    }
+
+    private Result addChildLocation(SysDict sysDict) {
+        sysDict.setDictType("Building");
+        //设置子楼栋ID
+        String maxId = locationDao.queryMaxIdChild(sysDict.getDictType());
+        if(StringUtils.isEmpty(maxId)) {
+            maxId = "1";
+        } else {
+            maxId = String.valueOf(Integer.valueOf(maxId)+1);
+        }
+        sysDict.setDictID(maxId);
         //楼栋名校验
         boolean name = checkLocationName(sysDict);
         if(name) {
@@ -59,6 +82,7 @@ public class LocationServiceImpl implements ILocationService{
         if(lng) {
             return Result.fail("经纬度已存在请重新输入");
         }
+        //新增楼栋
         int count =  locationDao.addLocation(sysDict);
         if(count>0) {
             return Result.success("楼栋新增成功");
@@ -66,41 +90,72 @@ public class LocationServiceImpl implements ILocationService{
         return Result.fail("楼栋新增失败");
     }
 
-    @Override
-    public Result editLocation(SysDict sysDict) {
-        return null;
+    /**
+     * 增加父楼栋
+     * */
+    private Result addFatherLocation(SysDict sysDict) {
+        sysDict.setDictType("BuildingArea");
+        //设置父楼栋ID
+        String maxId = locationDao.queryMaxIdFather(sysDict.getDictType());
+        if(StringUtils.isEmpty(maxId)) {
+            maxId = "1000001";
+        } else {
+            maxId = String.valueOf(Integer.valueOf(maxId)+1);
+        }
+        sysDict.setDictID(maxId);
+        //楼栋名校验
+        boolean name = checkLocationName(sysDict);
+        if(name) {
+            return Result.fail("该区域名已存在，请重新输入");
+        }
+        int count =  locationDao.addLocation(sysDict);
+        if(count>0) {
+            return Result.success("区域新增成功");
+        }
+        return Result.fail("区域新增失败");
     }
 
     /**
-     * 设置楼栋信息
+     * 删除楼栋
      * */
-    public SysDict initLocation(SysDict sysDict) {
-        //todo 创建人设置
-        //判断创建的是父楼栋还是子楼栋
-        String localType = sysDict.getLocalType();
-        if (localType.equals("father")) {
-            sysDict.setDictType("BuildingArea");
-            //设置父楼栋ID
-            String maxId = locationDao.queryMaxIdFather(sysDict.getDictType());
-            if(StringUtils.isEmpty(maxId)) {
-                maxId = "1000001";
-            } else {
-                maxId = String.valueOf(Integer.valueOf(maxId)+1);
-            }
-            sysDict.setDictID(maxId);
-        } else if (localType.equals("child")) {
-            sysDict.setDictType("Building");
-            //设置子楼栋ID
-            String maxId = locationDao.queryMaxIdChild(sysDict.getDictType());
-            if(StringUtils.isEmpty(maxId)) {
-                maxId = "1";
-            } else {
-                maxId = String.valueOf(Integer.valueOf(maxId)+1);
-            }
-            sysDict.setDictID(maxId);
-        }
-        return sysDict;
+    @Override
+    public Result deleteLocationById(String dictID) {
+        //todo 判断楼栋是否被引用
+        return null;
     }
+
+    @Override
+    public Result editLocation(SysDict sysDict) {
+        //todo 获取编辑人员
+        sysDict.setModifyDate(TimeUtils.getCurrentTime1());
+        //todo 楼栋信息校验
+        Integer count = locationDao.updateLocation(sysDict);
+        if(count>0) {
+            return Result.success("楼栋修改成功");
+        }
+        return Result.fail("楼栋修改失败");
+    }
+
+    /**
+     * 获取父楼栋
+     * */
+    @Override
+    public Result getFatherLocation() {
+        List<SysDict> fatherLocation = locationDao.getFatherLocation();
+        if(fatherLocation.size()==0) {
+            return Result.fail("当前没有父楼栋");
+        }
+        return Result.success(fatherLocation);
+    }
+    /**
+     * 根据id获取楼栋信息
+     * */
+    @Override
+    public SysDict getLocationById(String dictID) {
+        //todo 获取编辑人员
+        return locationDao.getLocationById(dictID);
+    }
+
     /**
      * 楼栋名校验
      * */

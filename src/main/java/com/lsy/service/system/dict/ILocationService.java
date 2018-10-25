@@ -20,4 +20,10 @@ public interface ILocationService {
     public Result addLocation(SysDict sysDict);
 
     public Result editLocation(SysDict sysDict);
+
+    public Result getFatherLocation();
+
+    public SysDict getLocationById(String dictID);
+
+    public Result deleteLocationById(String dictID);
 }

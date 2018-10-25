@@ -20,16 +20,17 @@
 	}
 	function initData(){
 		$.ajax({
-			url:"${ctx}/location/findFatherLoacl",
+			url:"${ctx}/system/dict/getFatherLocation",
 			type:"post",
 			dataType:"json",
-			success:function(data){
-				var n = eval(data.fatherLoaclList);//获取父级楼栋信息
-				var info = ""; 
-				for(var i=0;i<n.length;i++){
-					info +="<option value="+n[i].dictID+">"+n[i].dictName+"</option>";	
-				}
-				$("#childMenuLevelId").html(info);
+			success:function(result){
+			    console.log(result.data[0].dictID);
+				var fatherList = result.data;
+				var html = "";
+				$.each(fatherList,function (index,item) {
+					html+="<option value="+item.dictID+">"+item.dictName+"</option>";
+                });
+				$("#childMenuLevelId").html(html);
 			}
 		});
 	}
@@ -70,12 +71,13 @@
 	//提交form表单的时候发送的请求
 	function addForm(){
 		$("#locationForm").form('submit', {  
-		   	url : '${ctx}' + '/location/add',
+		   	url : '${ctx}' + '/system/dict/addLocation',
 		       dataType : 'text',
 		       success : function(result) {
-		       	result = $.parseJSON(result);
-		       	$.messager.alert('提示', result.msg, 'info',function(){
-		       		if(result.success){
+		       	result = $.parseJSON(result)
+		       	$.messager.alert('提示', result.message, 'info',function(){
+		       		if(result.success=="success"){
+		       		    alert("xiix");
 		       			$('#locationForm').form('clear');
 		       			parent.$.modalDialog.openner_dataGrid.datagrid('reload');//之所以能在这里调用到parent.$.modalDialog.openner_dataGrid这个对象，是因为user.jsp页面预定义好了
 						parent.$('#showDialog').dialog('close');

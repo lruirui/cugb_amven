@@ -7,6 +7,7 @@ package com.lsy.utils;
  * @create 2018-10-23 17:46
  */
 public class Result {
+    private Object data;
     private String result;
     private String message;
 
@@ -26,6 +27,14 @@ public class Result {
         this.message = message;
     }
 
+    public Object getData() {
+        return data;
+    }
+
+    public void setData(Object data) {
+        this.data = data;
+    }
+
     public Result() {
     }
 
@@ -42,6 +51,19 @@ public class Result {
         Result result = new Result();
         result.setResult("success");
         result.setMessage(message);
+        return result;
+    }
+    public static Result success(String message,Object data) {
+        Result result = new Result();
+        result.setData(data);
+        result.setResult("success");
+        result.setMessage(message);
+        return result;
+    }
+    public static Result success(Object data) {
+        Result result = new Result();
+        result.setData(data);
+        result.setResult("success");
         return result;
     }
     public static Result fail() {

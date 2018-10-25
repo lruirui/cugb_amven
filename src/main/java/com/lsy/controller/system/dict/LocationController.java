@@ -13,6 +13,7 @@ import com.lsy.service.system.dict.ILocationService;
 import com.lsy.utils.Grid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -53,6 +54,16 @@ public class LocationController {
     }
 
     /**
+     * 编辑页面跳转
+     * */
+    @RequestMapping("/editPage")
+    @ResponseBody
+    public String editLocationPage(String dictID, Model model) {
+        SysDict location = locationService.getLocationById(dictID);
+        model.addAttribute("location",location);
+        return prefix+"editPage";
+    }
+    /**
      * 编辑楼栋
      * */
     @RequestMapping("/editLocation")
@@ -66,8 +77,8 @@ public class LocationController {
      * */
     @RequestMapping("/deleteLocation")
     @ResponseBody
-    public Object deleteLocation(SysDict sysDict) {
-        return null;
+    public Object deleteLocation(String dictID) {
+        return locationService.deleteLocationById(dictID);
     }
 
     /**
@@ -77,5 +88,14 @@ public class LocationController {
     @ResponseBody
     public Grid queryLocation() {
         return null;
+    }
+
+    /**
+     * 获取父楼栋
+     * */
+    @RequestMapping("/getFatherLocation")
+    @ResponseBody
+    public Object getChildLocation() {
+        return locationService.getFatherLocation();
     }
 }

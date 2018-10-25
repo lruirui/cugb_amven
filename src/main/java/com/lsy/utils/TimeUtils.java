@@ -17,4 +17,9 @@ public class TimeUtils {
         Timestamp createTime = Timestamp.valueOf(format.format(time.getTime()));
         return createTime;
     }
+    public static  String getCurrentTime1() {
+        Date time = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return String.valueOf(format);
+    }
 }

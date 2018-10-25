@@ -27,4 +27,74 @@
             s1.DictType = 'building'
         AND s2.DictType = 'buildingarea'
     </select>
+    <insert id="addLocation" >
+        insert into sys_dict(
+			DictType,
+			DictID,
+			DictName,
+			IsEnable,
+			IsMain,
+			CreateDate,
+			CreateBy,
+			lng,
+			lat,
+			pid
+			)values(
+			#{dictType},
+			#{dictID},
+			#{dictName},
+			"1",
+			#{isMain},
+			#{createDate},
+			#{createBy},
+			#{lng},
+			#{lat},
+			#{pid}
+			)
+    </insert>
+    <select id="getFatherLocation" resultType="com.lsy.entity.system.SysDict">
+        SELECT * FROM sys_dict
+        WHERE DictType = 'buildingArea'
+    </select>
+    <select id="queryLocationByName" resultType="java.lang.Integer">
+        SELECT count(*) from sys_dict WHERE DictName = #{dictName} and dictID != #{dictID}
+    </select>
+    <select id="queryMaxIdFather" resultType="java.lang.String">
+        SELECT MAX(DictID) from sys_dict WHERE DictType = 'buildingArea'
+    </select>
+    <select id="queryMaxIdChild" resultType="java.lang.String">
+         SELECT MAX(DictID) id from sys_dict WHERE DictType = 'building'
+    </select>
+    <select id="queryLocationByLngLat" resultType="java.lang.Integer">
+        SELECT COUNT(DictID) from sys_dict WHERE lng = #{lng} and lat = #{lat} and dictid !=#{dictID}
+    </select>
+
+    <select id="getLocationById" resultType="com.lsy.entity.system.SysDict">
+        SELECT * from sys_dict WHERE DictID = #{dictID}
+    </select>
+
+    <update id="updateLocation" >
+        update sys_dict
+        <set>
+            <if test="dictName!=null">
+                DictName = #{dictName},
+            </if>
+            <if test="lng!=null">
+                lng = #{lng},
+            </if>
+            <if test="lat!=null">
+                lat = #{lat},
+            </if>
+            <if test="pid!=null">
+                pid = #{pid},
+            </if>
+            <if test="modifyBy!=null">
+                ModifyBy = #{modifyBy},
+            </if>
+            <if test="modifyDate!=null">
+                ModifyDate = #{modifyDate}
+            </if>
+        </set>
+        where DictID=#{dictID} and  DictType='Building'
+    </update>
 </mapper>

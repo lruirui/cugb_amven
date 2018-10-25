@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.lsy.dao.system.dict.EventDao">
+
+    <select id="getChildEvent" resultType="com.lsy.entity.system.EventType">
+        SELECT * from event_type
+          <where>
+              <if test="eventName != null or eventName !=''">
+                  AND eventName = #{eventName}
+              </if>
+              and pid != '0'
+          </where>
+        limit #{begin},#{rows}
+    </select>
+    <select id="getParentEventByid" resultType="com.lsy.entity.system.EventType">
+        SELECT * from event_type
+        WHERE eventId = #{pid}
+    </select>
+    <select id="getParentEvent" resultType="com.lsy.entity.system.EventType">
+        SELECT * from event_type
+        <where>
+            <if test="eventName !=null or eventName !=''">
+                AND eventName = #{eventName}
+            </if>
+            and pid = '0'
+        </where>
+        limit #{begin},#{rows}
+    </select>
+    <select id="getChildCount" resultType="integer">
+        SELECT count(*) from event_type
+        <where>
+            <if test="eventName !=null or eventName !=''">
+                AND eventName = #{eventName}
+            </if>
+            and pid != '0'
+        </where>
+        limit #{begin},#{rows}
+    </select>
+    <select id="getParentCount" resultType="integer">
+        SELECT COUNT(*) from event_type
+        <where>
+            <if test="eventName !=null or eventName !=''">
+                AND eventName = #{eventName}
+            </if>
+            and pid = '0'
+        </where>
+        limit #{begin},#{rows}
+    </select>
+</mapper>

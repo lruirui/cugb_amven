@@ -10,7 +10,12 @@
             <!--<property name="dialect" value="mysql"/>-->
         <!--</plugin>-->
     <!--</plugins>-->
+    <settings>
+        <!-- 打印查询语句 -->
+        <setting name="logImpl" value="STDOUT_LOGGING" />
+    </settings>
     <typeAliases>
         <package name="com.lsy.entity"></package>
     </typeAliases>
+
 </configuration>
